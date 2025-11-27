@@ -52,3 +52,10 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+Ancilla.AppHost/aspire-output/
+
+Ancilla.AppHost/.DS_Store
+
+Ancilla.FunctionApp/.DS_Store
+
+Ancilla.ServiceDefaults/.DS_Store
