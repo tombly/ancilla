@@ -8,7 +8,9 @@
     <PackageVersion Include="Aspire.Hosting.Azure.CosmosDB" Version="13.0.1" />
     <PackageVersion Include="Aspire.Hosting.Azure.Functions" Version="13.0.0-preview.1.25560.3" />
     <PackageVersion Include="Aspire.Microsoft.Azure.Cosmos" Version="13.0.1" />
+    <PackageVersion Include="Aspire.Hosting.OpenAI" Version="13.0.1" />
     <!-- Microsoft Azure Functions packages -->
+    <PackageVersion Include="Aspire.OpenAI" Version="13.0.1-preview.1.25575.3" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.51.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.50.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.CosmosDB" Version="4.14.0" />
@@ -20,11 +22,13 @@
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.0.0" />
     <!-- OpenTelemetry packages -->
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.67.1" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
+    <!-- Twilio package -->
     <PackageVersion Include="Twilio" Version="7.13.7" />
   </ItemGroup>
 </Project>

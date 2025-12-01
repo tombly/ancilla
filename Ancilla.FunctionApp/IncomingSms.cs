@@ -1,6 +1,5 @@
 using System.Net;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -8,7 +7,7 @@ using Twilio.Security;
 
 namespace Ancilla.FunctionApp;
 
-public class SmsFunction(ILogger<SmsFunction> _logger, CosmosClient _cosmosClient)
+public class SmsFunction(ILogger<SmsFunction> _logger, ChatService _chatService)
 {
     [Function("IncomingSms")]
     public async Task<HttpResponseData> IncomingSms([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData request)
@@ -26,28 +25,17 @@ public class SmsFunction(ILogger<SmsFunction> _logger, CosmosClient _cosmosClien
             var from = formValues["From"];
             var to = formValues["To"];
 
-            var note = new
+            if (string.IsNullOrWhiteSpace(body) || string.IsNullOrWhiteSpace(from) || string.IsNullOrWhiteSpace(to))
             {
-                id = Guid.NewGuid().ToString(),
-                content = body,
-                fromPhoneNumber = from,
-                aiPhoneNumber = to,
-                timestamp = DateTimeOffset.Now,
-                partitionKey = to
-            };
+                var badResponse = request.CreateResponse(HttpStatusCode.BadRequest);
+                await badResponse.WriteStringAsync("Missing required parameters.");
+                return badResponse;
+            }
 
-            _logger.LogInformation("Saving note with ID: {NoteId}", note.id);
+            var reply = await _chatService.Chat(body, from, to);
+            await _chatService.SendReply(reply, from);
 
-            var database = _cosmosClient.GetDatabase("ancilladb");
-            var container = database.GetContainer("notes");
-
-            await container.CreateItemAsync(note, new PartitionKey(note.partitionKey));
-
-            _logger.LogInformation("Successfully saved note with ID: {NoteId}", note.id);
-
-            var response = request.CreateResponse(HttpStatusCode.Created);
-            await response.WriteAsJsonAsync(note);
-            return response;
+            return request.CreateResponse(HttpStatusCode.Created);
         }
         catch (Exception exception)
         {
