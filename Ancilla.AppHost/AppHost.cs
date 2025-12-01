@@ -1,7 +1,7 @@
+using Ancilla.AppHost;
 using Aspire.Hosting.Azure;
 using Azure.Provisioning.Storage;
 using Microsoft.Extensions.DependencyInjection;
-using Ancilla.AppHost;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -12,17 +12,30 @@ builder.Services.Configure<AzureProvisioningOptions>(options =>
 
 builder.AddAzureContainerAppEnvironment("env");
 
-var cosmosDb = builder.AddAzureCosmosDB("cosmos")
-.RunAsPreviewEmulator(configureContainer: container =>
-    { container.WithDataExplorer(); });
+var openAiApiKeyParameter = builder.AddParameter("openai-api-key", true);
+var twilioPhoneNumberParameter = builder.AddParameter("twilio-phone-number", true);
+var twilioAccountSidParameter = builder.AddParameter("twilio-account-sid", true);
+var twilioAuthTokenParameter = builder.AddParameter("twilio-auth-token", true);
 
-var storage = builder.AddAzureStorage("storage").RunAsEmulator()
-    .ConfigureInfrastructure((infrastructure) =>
-    {
-        var storageAccount = infrastructure.GetProvisionableResources().OfType<StorageAccount>().FirstOrDefault(r => r.BicepIdentifier == "storage")
-            ?? throw new InvalidOperationException($"Could not find configured storage account with name 'storage'");
-        storageAccount.AllowBlobPublicAccess = false;
-    });
+var openai = builder.AddOpenAI("openai").WithApiKey(openAiApiKeyParameter);
+var chat = openai.AddModel("chat", "gpt-4o-mini");
+
+var cosmosDb = builder.AddAzureCosmosDB("cosmos")
+                      .RunAsPreviewEmulator(configureContainer: container =>
+                      {
+                          container.WithDataExplorer();
+                      });
+
+var storage = builder.AddAzureStorage("storage")
+                     .RunAsEmulator()
+                     .ConfigureInfrastructure((infrastructure) =>
+                     {
+                         var storageAccount = infrastructure.GetProvisionableResources()
+                                                            .OfType<StorageAccount>()
+                                                            .FirstOrDefault(r => r.BicepIdentifier == "storage")
+                             ?? throw new InvalidOperationException($"Could not find configured storage account with name 'storage'");
+                         storageAccount.AllowBlobPublicAccess = false;
+                     });
 
 var blobs = storage.AddBlobs("blobs");
 var queues = storage.AddQueues("queues");
@@ -33,10 +46,14 @@ var functionApp = builder.AddAzureFunctionsProject<Projects.Ancilla_FunctionApp>
     .WithReference(blobs)
     .WithReference(queues)
     .WithReference(tables)
+    .WithReference(chat)
     .WithHostStorage(storage)
+    .WithEnvironment("TWILIO_PHONE_NUMBER", twilioPhoneNumberParameter)
+    .WithEnvironment("TWILIO_ACCOUNT_SID", twilioAccountSidParameter)
+    .WithEnvironment("TWILIO_AUTH_TOKEN", twilioAuthTokenParameter)
     .WithExternalHttpEndpoints();
 
 var database = cosmosDb.AddCosmosDatabase("ancilladb");
-var container = database.AddContainer("notes", "/id");
+database.AddContainer("notes", "/partitionKey");
 
 builder.Build().Run();
