@@ -77,17 +77,16 @@ public class CosmosPlugin(CosmosClient _cosmosClient)
     }
 
     [KernelFunction("delete_note")]
-    [Description("Deletes a note from Cosmos DB given its ID")]
-    public async Task DeleteNoteAsync(string id, string aiPhoneNumber)
+    [Description("Deletes a note from Cosmos DB given its ID which is a GUID. Use the get_notes function to retrieve note IDs.")]
+    public async Task DeleteNoteAsync(Guid id, string aiPhoneNumber)
     {
-        ArgumentNullException.ThrowIfNull(id);
         ArgumentNullException.ThrowIfNull(aiPhoneNumber);
 
         var container = await GetContainerAsync();
 
-        var response = await container.ReadItemAsync<dynamic>(id, new PartitionKey(aiPhoneNumber));
+        var response = await container.ReadItemAsync<dynamic>(id.ToString(), new PartitionKey(aiPhoneNumber));
         var note = response.Resource;
         note.deleted = DateTimeOffset.Now;
-        await container.ReplaceItemAsync(note, id, new PartitionKey(aiPhoneNumber));
+        await container.ReplaceItemAsync(note, id.ToString(), new PartitionKey(aiPhoneNumber));
     }
 }
