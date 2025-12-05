@@ -19,7 +19,7 @@ var twilioAuthTokenParameter = builder.AddParameter("twilio-auth-token", true);
 var allowedPhoneNumbers = builder.AddParameter("allowed-phone-numbers", true);
 
 var openai = builder.AddOpenAI("openai").WithApiKey(openAiApiKeyParameter);
-var chat = openai.AddModel("chat", "gpt-4o-mini");
+var chat = openai.AddModel("chat", "gpt-5-mini");
 
 var cosmosDb = builder.AddAzureCosmosDB("cosmos")
                       .RunAsPreviewEmulator(configureContainer: container =>

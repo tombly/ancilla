@@ -17,7 +17,7 @@ public class ChatService(OpenAIClient _openAiClient, CosmosClient _cosmosClient,
 
         // Use the injected OpenAI client from Aspire
         builder.Services.AddSingleton(_openAiClient);
-        builder.AddOpenAIChatCompletion("gpt-4o-mini", _openAiClient);
+        builder.AddOpenAIChatCompletion("gpt-5-mini", _openAiClient);
         builder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
         var kernel = builder.Build();
