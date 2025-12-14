@@ -29,7 +29,7 @@ public class ChatService(OpenAIClient _openAiClient, NoteService _noteService, H
         var history = new ChatHistory();
 
         var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(session.TimeZone);
-        var localTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZoneInfo);
+        var localTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, timeZoneInfo);
 
         var instructions = $"""
             - You are an AI agent named Ancilla.
