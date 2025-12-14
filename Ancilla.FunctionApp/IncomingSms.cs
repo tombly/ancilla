@@ -8,7 +8,7 @@ using Twilio.Security;
 
 namespace Ancilla.FunctionApp;
 
-public class SmsFunction(ILogger<SmsFunction> _logger, ChatInterceptor _chatInterceptor, ChatService _chatService, SmsService _smsService)
+public class SmsFunction(ILogger<SmsFunction> _logger, ChatInterceptor _chatInterceptor, SmsService _smsService)
 {
     [Function("IncomingSms")]
     public async Task<HttpResponseData> IncomingSms([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData request)
@@ -31,14 +31,6 @@ public class SmsFunction(ILogger<SmsFunction> _logger, ChatInterceptor _chatInte
                 var badResponse = request.CreateResponse(HttpStatusCode.BadRequest);
                 await badResponse.WriteStringAsync("Missing required parameters.");
                 return badResponse;
-            }
-
-            var allowedPhoneNumbers = Environment.GetEnvironmentVariable("ALLOWED_PHONE_NUMBERS") ?? throw new Exception("ALLOWED_PHONE_NUMBERS not set");
-            if (!allowedPhoneNumbers.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Contains(from))
-            {
-                var forbiddenResponse = request.CreateResponse(HttpStatusCode.Forbidden);
-                await forbiddenResponse.WriteStringAsync("Phone number not allowed.");
-                return forbiddenResponse;
             }
 
             var reply = await _chatInterceptor.HandleMessage(body, from, to);

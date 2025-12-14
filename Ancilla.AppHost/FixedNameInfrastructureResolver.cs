@@ -9,7 +9,7 @@ namespace Ancilla.AppHost;
 
 public sealed class FixedNameInfrastructureResolver() : InfrastructureResolver
 {
-    private const string UniqueNamePrefix = "ancilla01";
+    private const string UniqueNamePrefix = "ancilla";
 
     /// <summary>
     /// Resolves the configuration for cloud resources, including a fixed name for the resource at provisioning time.

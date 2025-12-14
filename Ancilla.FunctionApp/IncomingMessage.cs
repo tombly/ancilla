@@ -28,14 +28,6 @@ public class MessageFunction(ILogger<MessageFunction> _logger, ChatInterceptor _
                 return badResponse;
             }
 
-            var allowedPhoneNumbers = Environment.GetEnvironmentVariable("ALLOWED_PHONE_NUMBERS") ?? throw new Exception("ALLOWED_PHONE_NUMBERS not set");
-            if (!allowedPhoneNumbers.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Contains(from))
-            {
-                var forbiddenResponse = request.CreateResponse(HttpStatusCode.Forbidden);
-                await forbiddenResponse.WriteStringAsync("Phone number not allowed.");
-                return forbiddenResponse;
-            }
-
             var reply = await _chatInterceptor.HandleMessage(body, from, to);
 
             var response = request.CreateResponse(HttpStatusCode.OK);
