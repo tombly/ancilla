@@ -23,7 +23,10 @@ public class SmsFunction(ILogger<SmsFunction> _logger, CommandInterceptor _chatI
             _logger.LogInformation("IncomingSms triggered");
 
             if (!await ValidateRequest(request))
+            {
+                _logger.LogWarning("Invalid Twilio request signature");
                 return request.CreateResponse(HttpStatusCode.Forbidden);
+            }
 
             var bodyString = await request.ReadAsStringAsync();
             var formValues = System.Web.HttpUtility.ParseQueryString(bodyString ?? string.Empty);
