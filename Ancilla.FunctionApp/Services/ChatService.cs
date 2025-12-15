@@ -42,6 +42,8 @@ public class ChatService(OpenAIClient _openAiClient, NoteService _noteService, H
             - Be concise in your responses because they are sent via SMS.
             - When a user asks you to 'list my notes', respond with a numbered
               list of note titles, oldest first. Always exclude deleted notes.
+            - You have a separate chat history for each user, but the notes are
+              shared across all users.
             """;
         history.AddSystemMessage(instructions);
 
