@@ -7,7 +7,7 @@ using OpenAI;
 
 namespace Ancilla.FunctionApp.Services;
 
-public class ChatService(OpenAIClient _openAiClient, TodoService _todoService, HistoryService _historyService)
+public class ChatService(OpenAIClient _openAiClient, TodoService _todoService, KnowledgeService _knowledgeService, HistoryService _historyService)
 {
     public async Task<string> Chat(string message, string userPhoneNumber, string agentPhoneNumber, SessionEntry session)
     {
@@ -20,7 +20,7 @@ public class ChatService(OpenAIClient _openAiClient, TodoService _todoService, H
 
         var kernel = builder.Build();
 
-        kernel.Plugins.AddFromObject(new CosmosPlugin(_todoService));
+        kernel.Plugins.AddFromObject(new CosmosPlugin(_todoService, _knowledgeService));
 
         // Enable planning.
         var openAIPromptExecutionSettings = new OpenAIPromptExecutionSettings()
@@ -33,16 +33,22 @@ public class ChatService(OpenAIClient _openAiClient, TodoService _todoService, H
 
         var instructions = $"""
             - You are an AI agent named Ancilla.
-            - You help users remember things by saving and retrieving todos.
+            - You help users remember (1) things to do and (2) general knowledge.
+            - You are a singlular AI instance serving multiple users. 
             - Your phone number is '{agentPhoneNumber}'.
             - You are currently chatting with a user whose phone number is '{userPhoneNumber}'.
-            - You have access to a database of todos associated with this user.
-            - You have access to the current conversation history.
+            - You have a memory of todos and knowledge (a database with basic CRUD operations).
+            - Use your judgement to decide whether the user is talking about todos or knowledge.
+              In general, todos will be action-oriented items the user wants to remember to do later.
+            - You can create, read, update, and delete todos and knowledge entries using your memory
+              functions as needed.
+            - For the todos, they do not have due dates and you are not able to remind the user proactively.
+            - You have access to the individual conversation history with each user.
             - The user's current local date and time is {localTime:f} ({session.TimeZone}).
             - Be concise in your responses because they are sent via SMS.
             - When a user asks you to 'list my todos', respond with a numbered
               list of todo titles, oldest first. Always exclude deleted todos.
-            - You have a separate chat history for each user, but the todos are
+            - You have a separate chat history for each user, but your memory is
               shared across all users.
             """;
         history.AddSystemMessage(instructions);

@@ -13,6 +13,7 @@ builder.AddOpenAIClient(connectionName: "chat");
 
 builder.Services.AddSingleton<ChatService>();
 builder.Services.AddSingleton<TodoService>();
+builder.Services.AddSingleton<KnowledgeService>();
 builder.Services.AddSingleton<HistoryService>();
 builder.Services.AddSingleton<SmsService>();
 builder.Services.AddSingleton<SessionService>();

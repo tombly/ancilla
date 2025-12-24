@@ -22,7 +22,14 @@ az cosmosdb sql container create \
   --account-name $cosmos_account \
   --resource-group $resource_group \
   --database-name "ancilladb" \
-  --name "notes" \
+  --name "todos" \
+  --partition-key-path "/agentPhoneNumber"
+
+az cosmosdb sql container create \
+  --account-name $cosmos_account \
+  --resource-group $resource_group \
+  --database-name "ancilladb" \
+  --name "knowledge" \
   --partition-key-path "/agentPhoneNumber"
 
 az cosmosdb sql container create \

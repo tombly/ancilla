@@ -4,7 +4,7 @@ using Microsoft.SemanticKernel;
 
 namespace Ancilla.FunctionApp;
 
-public class CosmosPlugin(TodoService _todoService)
+public class CosmosPlugin(TodoService _todoService, KnowledgeService _knowledgeService)
 {
     [KernelFunction("save_todo")]
     [Description("Saves a todo to the database")]
@@ -29,5 +29,30 @@ public class CosmosPlugin(TodoService _todoService)
     {
         var agentPhoneNumber = kernel.Data["agentPhoneNumber"]?.ToString()!;
         await _todoService.DeleteTodoAsync(id, agentPhoneNumber);
+    }
+
+    [KernelFunction("save_knowledge")]
+    [Description("Saves a knowledge entry to the database")]
+    public async Task SaveKnowledgeAsync(Kernel kernel, string content)
+    {
+        var agentPhoneNumber = kernel.Data["agentPhoneNumber"]?.ToString()!;
+        var userPhoneNumber = kernel.Data["userPhoneNumber"]?.ToString()!;
+        await _knowledgeService.SaveKnowledgeAsync(agentPhoneNumber, userPhoneNumber, content);
+    }
+
+    [KernelFunction("get_knowledge")]
+    [Description("Retrieves knowledge entries from the database for the current agent")]
+    public async Task<KnowledgeEntry[]> GetKnowledgeAsync(Kernel kernel)
+    {
+        var agentPhoneNumber = kernel.Data["agentPhoneNumber"]?.ToString()!;
+        return await _knowledgeService.GetKnowledgeAsync(agentPhoneNumber);
+    }
+
+    [KernelFunction("delete_knowledge")]
+    [Description("Deletes a knowledge entry from the database given its ID which is a GUID. Use the get_knowledge function to retrieve knowledge IDs.")]
+    public async Task DeleteKnowledgeAsync(Kernel kernel, Guid id)
+    {
+        var agentPhoneNumber = kernel.Data["agentPhoneNumber"]?.ToString()!;
+        await _knowledgeService.DeleteKnowledgeAsync(id, agentPhoneNumber);
     }
 }
