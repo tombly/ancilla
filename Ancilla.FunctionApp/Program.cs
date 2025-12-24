@@ -12,7 +12,7 @@ builder.AddAzureCosmosClient("cosmos");
 builder.AddOpenAIClient(connectionName: "chat");
 
 builder.Services.AddSingleton<ChatService>();
-builder.Services.AddSingleton<NoteService>();
+builder.Services.AddSingleton<TodoService>();
 builder.Services.AddSingleton<HistoryService>();
 builder.Services.AddSingleton<SmsService>();
 builder.Services.AddSingleton<SessionService>();

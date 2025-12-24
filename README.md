@@ -2,13 +2,13 @@
 
 **AI Assistant**
 
-Ancilla is an AI-powered memory assistant that helps users save and retrieve notes through SMS messaging. Built with .NET Aspire, Azure Functions, and Azure Cosmos DB, it provides an intelligent, conversational interface for managing personal notes and information.
+Ancilla is an AI-powered memory assistant that helps users save and retrieve todos through SMS messaging. Built with .NET Aspire, Azure Functions, and Azure Cosmos DB, it provides an intelligent, conversational interface for managing personal todos and information.
 
 ## Features
 
 - 💬 **SMS Interface** - Interact with your AI assistant via text messages using Twilio
 - 🧠 **AI-Powered Conversations** - Powered by OpenAI GPT models with Semantic Kernel
-- 📝 **Note Management** - Save, retrieve, and delete notes using natural language
+- 📝 **Todo Management** - Save, retrieve, and delete todos using natural language
 - 🔐 **Session Management** - Secure, per-user sessions with simple commands
 - 📜 **Conversation History** - Maintains context across multiple interactions
 - ☁️ **Cloud Native** - Built with .NET Aspire for easy deployment to Azure
@@ -26,7 +26,7 @@ Ancilla is built using modern cloud-native patterns:
 
 - **CommandInterceptor** - Handles special commands (`hello ancilla`, `goodbye ancilla`)
 - **ChatService** - AI conversation management with OpenAI integration
-- **NoteService** - CRUD operations for user notes in Cosmos DB
+- **TodoService** - CRUD operations for user todos in Cosmos DB
 - **SessionService** - User session lifecycle management
 - **HistoryService** - Conversation history persistence and retrieval
 - **SmsService** - Twilio integration for SMS messaging
@@ -106,10 +106,10 @@ hello ancilla
 
 Response:
 ```
-Welcome! I'm your AI memory assistant. I can help you save and retrieve notes via SMS. Try sending me a note!
+Welcome! I'm your AI memory assistant. I can help you save and retrieve todos via SMS. Try sending me a todo!
 ```
 
-### Saving Notes
+### Saving Todos
 
 Simply send natural language messages:
 ```
@@ -117,29 +117,29 @@ Remember that my dentist appointment is next Tuesday at 2pm
 ```
 
 ```
-Save a note: buy milk, eggs, and bread
+Save a todo: buy milk, eggs, and bread
 ```
 
-### Retrieving Notes
+### Retrieving Todos
 
-Ask for your notes in natural language:
+Ask for your todos in natural language:
 ```
-What notes do I have?
+What todos do I have?
 ```
 
 ```
-List my notes
+List my todos
 ```
 
 ```
 Do I have any appointments?
 ```
 
-### Deleting Notes
+### Deleting Todos
 
 Request deletion naturally:
 ```
-Delete the note about the dentist
+Delete the todo about the dentist
 ```
 
 ```
@@ -155,7 +155,7 @@ goodbye ancilla
 
 Response:
 ```
-Goodbye! Your session has been ended. Your notes have been preserved. Send 'hello ancilla' to start a new session.
+Goodbye! Your session has been ended. Your todos have been preserved. Send 'hello ancilla' to start a new session.
 ```
 
 ## Configuration
@@ -185,7 +185,7 @@ Ancilla/
 │   └── Services/              # Business logic services
 │       ├── ChatService.cs
 │       ├── HistoryService.cs
-│       ├── NoteService.cs
+│       ├── TodoService.cs
 │       ├── SessionService.cs
 │       └── SmsService.cs
 └── Ancilla.ServiceDefaults/   # Shared configuration
@@ -198,7 +198,7 @@ Ancilla/
 - Tracks active user sessions
 - Stores user timezone preferences
 
-### Notes
+### Todos
 - Partitioned by `agentPhoneNumber`
 - Associated with `userPhoneNumber`
 - Supports soft deletion

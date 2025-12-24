@@ -3,13 +3,13 @@ using Microsoft.Azure.Cosmos;
 namespace Ancilla.FunctionApp.Services;
 
 /// <summary>
-/// Service for managing notes in Cosmos DB. Entries are partitioned by the AI's
-/// phone number so that all notes for a given AI are stored together.
+/// Service for managing todos in Cosmos DB. Entries are partitioned by the AI's
+/// phone number so that all todos for a given AI are stored together.
 /// </summary>
-public class NoteService(CosmosClient _cosmosClient)
+public class TodoService(CosmosClient _cosmosClient)
 {
     private const string DatabaseName = "ancilladb";
-    private const string ContainerName = "notes";
+    private const string ContainerName = "todos";
 
     private async Task<Container> GetContainerAsync()
     {
@@ -20,13 +20,13 @@ public class NoteService(CosmosClient _cosmosClient)
         return containerResponse.Container;
     }
 
-    public async Task SaveNoteAsync(string agentPhoneNumber, string userPhoneNumber, string content)
+    public async Task SaveTodoAsync(string agentPhoneNumber, string userPhoneNumber, string content)
     {
         ArgumentNullException.ThrowIfNull(agentPhoneNumber);
         ArgumentNullException.ThrowIfNull(userPhoneNumber);
         ArgumentNullException.ThrowIfNull(content);
 
-        var note = new
+        var todo = new
         {
             id = Guid.NewGuid().ToString(),
             content,
@@ -37,10 +37,10 @@ public class NoteService(CosmosClient _cosmosClient)
         };
 
         var container = await GetContainerAsync();
-        await container.CreateItemAsync(note, new PartitionKey(note.agentPhoneNumber));
+        await container.CreateItemAsync(todo, new PartitionKey(todo.agentPhoneNumber));
     }
 
-    public async Task<NoteEntry[]> GetNotesAsync(string agentPhoneNumber)
+    public async Task<TodoEntry[]> GetTodosAsync(string agentPhoneNumber)
     {
         ArgumentNullException.ThrowIfNull(agentPhoneNumber);
 
@@ -48,30 +48,30 @@ public class NoteService(CosmosClient _cosmosClient)
 
         var query = new QueryDefinition("SELECT * FROM c WHERE c.agentPhoneNumber = @phoneNumber")
                         .WithParameter("@phoneNumber", agentPhoneNumber);
-        var iterator = container.GetItemQueryIterator<NoteEntry>(query);
-        var notes = new List<NoteEntry>();
+        var iterator = container.GetItemQueryIterator<TodoEntry>(query);
+        var todos = new List<TodoEntry>();
         while (iterator.HasMoreResults)
         {
             var response = await iterator.ReadNextAsync();
-            notes.AddRange(response);
+            todos.AddRange(response);
         }
-        return [.. notes];
+        return [.. todos];
     }
 
-    public async Task DeleteNoteAsync(Guid id, string agentPhoneNumber)
+    public async Task DeleteTodoAsync(Guid id, string agentPhoneNumber)
     {
         ArgumentNullException.ThrowIfNull(agentPhoneNumber);
 
         var container = await GetContainerAsync();
 
         var response = await container.ReadItemAsync<dynamic>(id.ToString(), new PartitionKey(agentPhoneNumber));
-        var note = response.Resource;
-        note.deleted = DateTimeOffset.Now;
-        await container.ReplaceItemAsync(note, id.ToString(), new PartitionKey(agentPhoneNumber));
+        var todo = response.Resource;
+        todo.deleted = DateTimeOffset.Now;
+        await container.ReplaceItemAsync(todo, id.ToString(), new PartitionKey(agentPhoneNumber));
     }
 }
 
-public class NoteEntry
+public class TodoEntry
 {
     public Guid Id { get; set; }
     public required string Content { get; set; }

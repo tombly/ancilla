@@ -7,7 +7,7 @@ using OpenAI;
 
 namespace Ancilla.FunctionApp.Services;
 
-public class ChatService(OpenAIClient _openAiClient, NoteService _noteService, HistoryService _historyService)
+public class ChatService(OpenAIClient _openAiClient, TodoService _todoService, HistoryService _historyService)
 {
     public async Task<string> Chat(string message, string userPhoneNumber, string agentPhoneNumber, SessionEntry session)
     {
@@ -20,7 +20,7 @@ public class ChatService(OpenAIClient _openAiClient, NoteService _noteService, H
 
         var kernel = builder.Build();
 
-        kernel.Plugins.AddFromObject(new CosmosPlugin(_noteService));
+        kernel.Plugins.AddFromObject(new CosmosPlugin(_todoService));
 
         // Enable planning.
         var openAIPromptExecutionSettings = new OpenAIPromptExecutionSettings()
@@ -33,16 +33,16 @@ public class ChatService(OpenAIClient _openAiClient, NoteService _noteService, H
 
         var instructions = $"""
             - You are an AI agent named Ancilla.
-            - You help users remember things by saving and retrieving notes.
+            - You help users remember things by saving and retrieving todos.
             - Your phone number is '{agentPhoneNumber}'.
             - You are currently chatting with a user whose phone number is '{userPhoneNumber}'.
-            - You have access to a database of notes associated with this user.
+            - You have access to a database of todos associated with this user.
             - You have access to the current conversation history.
             - The user's current local date and time is {localTime:f} ({session.TimeZone}).
             - Be concise in your responses because they are sent via SMS.
-            - When a user asks you to 'list my notes', respond with a numbered
-              list of note titles, oldest first. Always exclude deleted notes.
-            - You have a separate chat history for each user, but the notes are
+            - When a user asks you to 'list my todos', respond with a numbered
+              list of todo titles, oldest first. Always exclude deleted todos.
+            - You have a separate chat history for each user, but the todos are
               shared across all users.
             """;
         history.AddSystemMessage(instructions);

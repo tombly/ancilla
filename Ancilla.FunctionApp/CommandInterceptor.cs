@@ -29,7 +29,7 @@ public class CommandInterceptor(ILogger<CommandInterceptor> _logger, SessionServ
 
             // Add the session.
             await _sessionService.CreateSessionAsync(agentPhoneNumber, userPhoneNumber);
-            return "Welcome! I'm your AI memory assistant. I can help you save and retrieve notes via SMS. Try sending me a note!";
+            return "Welcome! I'm your AI memory assistant. I can help you save and retrieve todos via SMS. Try sending me a todo!";
         }
 
         // Check if the message is the "goodbye" command (case-insensitive).
@@ -42,9 +42,9 @@ public class CommandInterceptor(ILogger<CommandInterceptor> _logger, SessionServ
             if (existingSession == null)
                 return "You don't have an active session.";
 
-            // Delete the session (but keep any notes).
+            // Delete the session (but keep any todos).
             await _sessionService.DeleteSessionAsync(agentPhoneNumber, userPhoneNumber);
-            return "Goodbye! Your session has been ended. Your notes have been preserved. Send 'hello ancilla' to start a new session.";
+            return "Goodbye! Your session has been ended. Your todos have been preserved. Send 'hello ancilla' to start a new session.";
         }
 
         // Verify session is registered before processing other messages.
