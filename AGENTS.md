@@ -1,10 +1,10 @@
 # AGENTS.md
 
-This file provides guidance for AI coding agents working on the Ancilla project.
+This file provides guidance for AI coding agents working on the Ancela project.
 
 ## Project Overview
 
-Ancilla is an AI-powered memory assistant that helps users manage todos and knowledge through SMS messaging. It's built with:
+Ancela is an AI-powered memory assistant that helps users manage todos and knowledge through SMS messaging. It's built with:
 
 - **.NET 10.0** with C# 13
 - **.NET Aspire** for cloud-native orchestration
@@ -17,10 +17,10 @@ Ancilla is an AI-powered memory assistant that helps users manage todos and know
 ## Project Structure
 
 ```
-Ancilla/
-├── Ancilla.AppHost/          # .NET Aspire orchestration & infrastructure
-├── Ancilla.FunctionApp/      # Azure Functions HTTP endpoints & services
-├── Ancilla.ServiceDefaults/  # Shared service configuration
+Ancela/
+├── Ancela.AppHost/          # .NET Aspire orchestration & infrastructure
+├── Ancela.FunctionApp/      # Azure Functions HTTP endpoints & services
+├── Ancela.ServiceDefaults/  # Shared service configuration
 └── *.slnx                    # Solution file
 ```
 
@@ -31,7 +31,7 @@ Ancilla/
 dotnet build
 
 # Run locally with Aspire (launches all services + dashboard)
-dotnet run --project Ancilla.AppHost
+dotnet run --project Ancela.AppHost
 
 # Run tests (when available)
 dotnet test
@@ -52,15 +52,15 @@ azd up
 
 ## Key Components
 
-### Ancilla.AppHost
+### Ancela.AppHost
 - `AppHost.cs` - Aspire distributed application builder, defines all Azure resources
 - `FixedNameInfrastructureResolver.cs` - Custom naming for Azure resources
 - `aspire-output/` - Generated Bicep templates for infrastructure
 
-### Ancilla.FunctionApp
+### Ancela.FunctionApp
 - `Program.cs` - Function app startup and DI configuration
 - `IncomingSms.cs` - HTTP trigger for incoming SMS messages from Twilio
-- `CommandInterceptor.cs` - Handles special commands (`hello ancilla`, `goodbye ancilla`)
+- `CommandInterceptor.cs` - Handles special commands (`hello ancela`, `goodbye ancela`)
 - `CosmosPlugin.cs` - Semantic Kernel plugin exposing todo/knowledge operations to AI
 
 #### Services (`Services/` folder)
@@ -83,7 +83,7 @@ Key NuGet packages:
 ## Configuration
 
 ### Local Development
-User secrets are required in `Ancilla.AppHost`:
+User secrets are required in `Ancela.AppHost`:
 ```bash
 dotnet user-secrets set Parameters:openai-api-key "..."
 dotnet user-secrets set Parameters:twilio-account-sid "..."
@@ -112,9 +112,9 @@ The app uses a single Cosmos DB database with containers for:
 - Context is passed via `kernel.Data[]` dictionary
 
 ### Session Flow
-1. User texts "hello ancilla" → Creates new session
+1. User texts "hello ancela" → Creates new session
 2. Subsequent messages → Routed to ChatService for AI processing
-3. User texts "goodbye ancilla" → Ends session
+3. User texts "goodbye ancela" → Ends session
 
 ## Testing Guidelines
 
@@ -127,7 +127,7 @@ When writing tests:
 ## Common Tasks
 
 ### Adding a New Service
-1. Create service class in `Ancilla.FunctionApp/Services/`
+1. Create service class in `Ancela.FunctionApp/Services/`
 2. Register in `Program.cs` DI container
 3. Inject via primary constructor where needed
 

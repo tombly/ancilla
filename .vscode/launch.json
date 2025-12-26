@@ -11,7 +11,7 @@
       "name": "Attach to Aspire AppHost",
       "type": "coreclr",
       "request": "attach",
-      "processName": "Ancilla.AppHost"
+      "processName": "Ancela.AppHost"
     },
     {
       "name": "Attach to Azure Functions",

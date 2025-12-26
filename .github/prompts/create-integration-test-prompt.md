@@ -1,10 +1,10 @@
 # Adding Integration Tests for AI Function Calling
 
-Use this prompt when you need to add integration tests that verify AI function calling behavior in the Ancilla project.
+Use this prompt when you need to add integration tests that verify AI function calling behavior in the Ancela project.
 
 ## Context
 
-Ancilla uses Semantic Kernel with OpenAI models to invoke functions based on natural language prompts. Integration tests verify that specific prompts result in the correct function calls by the AI model.
+Ancela uses Semantic Kernel with OpenAI models to invoke functions based on natural language prompts. Integration tests verify that specific prompts result in the correct function calls by the AI model.
 
 ## Test Strategy
 
@@ -59,7 +59,7 @@ public async Task MyFunction_WhenPromptGiven_CallsExpectedService()
 
 ### 5. Run tests
 ```bash
-dotnet test Ancilla.FunctionApp.Tests
+dotnet test Ancela.FunctionApp.Tests
 ```
 
 Tests run sequentially (`DisableTestParallelization = true`) to avoid race conditions with OpenAI API.
@@ -123,7 +123,7 @@ public class ChatServiceMyFeatureTests : ChatServiceTestBase
 ### API Key Configuration
 Tests require OpenAI API key in user secrets:
 ```bash
-cd Ancilla.AppHost
+cd Ancela.AppHost
 dotnet user-secrets set "Parameters:openai-api-key" "your-key-here"
 ```
 
@@ -136,7 +136,7 @@ From `ChatServiceTestBase`:
 - `CreateKnowledge(string content, Guid? id)` - Create test knowledge
 
 ### Test Data
-- `AgentPhoneNumber` - Ancilla's phone number ("+15551234567")
+- `AgentPhoneNumber` - Ancela's phone number ("+15551234567")
 - `UserPhoneNumber` - Test user's phone number ("+15559876543")
 - `TestSession` - Pre-configured session entry
 

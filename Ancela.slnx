@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Ancela.AppHost/Ancela.AppHost.csproj" />
+  <Project Path="Ancela.Agent/Ancela.Agent.csproj" />
+  <Project Path="Ancela.FunctionApp.Tests/Ancela.FunctionApp.Tests.csproj" />
+  <Project Path="Ancela.FunctionApp/Ancela.FunctionApp.csproj" />
+  <Project Path="Ancela.ServiceDefaults/Ancela.ServiceDefaults.csproj" />
+</Solution>

@@ -16,32 +16,32 @@ az cosmosdb sql role assignment create \
 az cosmosdb sql database create \
   --account-name $cosmos_account \
   --resource-group $resource_group \
-  --name "ancilladb"
+  --name "anceladb"
 
 az cosmosdb sql container create \
   --account-name $cosmos_account \
   --resource-group $resource_group \
-  --database-name "ancilladb" \
+  --database-name "anceladb" \
   --name "todos" \
   --partition-key-path "/agentPhoneNumber"
 
 az cosmosdb sql container create \
   --account-name $cosmos_account \
   --resource-group $resource_group \
-  --database-name "ancilladb" \
+  --database-name "anceladb" \
   --name "knowledge" \
   --partition-key-path "/agentPhoneNumber"
 
 az cosmosdb sql container create \
   --account-name $cosmos_account \
   --resource-group $resource_group \
-  --database-name "ancilladb" \
+  --database-name "anceladb" \
   --name "history" \
   --partition-key-path "/agentPhoneNumber"
 
 az cosmosdb sql container create \
   --account-name $cosmos_account \
   --resource-group $resource_group \
-  --database-name "ancilladb" \
+  --database-name "anceladb" \
   --name "sessions" \
   --partition-key-path "/agentPhoneNumber"
