@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using OpenAI;
 
-namespace Ancela.FunctionApp.Tests;
+namespace Ancela.Agent.Tests;
 
 /// <summary>
 /// Base class for ChatService integration tests that use real OpenAI calls

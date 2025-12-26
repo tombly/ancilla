@@ -1,6 +1,6 @@
 using Moq;
 
-namespace Ancela.FunctionApp.Tests;
+namespace Ancela.Agent.Tests;
 
 /// <summary>
 /// Integration tests verifying that knowledge-related prompts trigger the correct

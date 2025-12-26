@@ -26,7 +26,7 @@ public sealed class FixedNameInfrastructureResolver() : InfrastructureResolver
         switch (construct)
         {
             case CosmosDBAccount cosmosAccount:
-                cosmosAccount.Name = $"cosmos-{UniqueNamePrefix}-{cosmosAccount.BicepIdentifier.ToLowerInvariant()}{environmentSuffix.Replace("-", string.Empty)}";
+                cosmosAccount.Name = $"{UniqueNamePrefix}-{cosmosAccount.BicepIdentifier.ToLowerInvariant()}{environmentSuffix.Replace("-", string.Empty)}";
                 break;
 
             case StorageAccount storageAccount:

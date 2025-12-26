@@ -1,7 +1,7 @@
 using Ancela.Agent.Services;
 using Moq;
 
-namespace Ancela.FunctionApp.Tests;
+namespace Ancela.Agent.Tests;
 
 /// <summary>
 /// Integration tests verifying that calendar-related prompts trigger the correct
