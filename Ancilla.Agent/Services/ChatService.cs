@@ -5,7 +5,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI;
 
-namespace Ancilla.FunctionApp.Services;
+namespace Ancilla.Agent.Services;
 
 public class ChatService(OpenAIClient _openAiClient, ITodoService _todoService, IKnowledgeService _knowledgeService, IHistoryService _historyService, IGraphService _graphService)
 {

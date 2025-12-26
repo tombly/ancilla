@@ -2,7 +2,7 @@ using Azure.Identity;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 
-namespace Ancilla.FunctionApp.Services;
+namespace Ancilla.Agent.Services;
 
 public interface IGraphService
 {

@@ -2,7 +2,7 @@ using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
 
-namespace Ancilla.FunctionApp.Services;
+namespace Ancilla.Agent.Services;
 
 /// <summary>
 /// A DI-friendly wrapper around <see cref="TwilioClient"/>.

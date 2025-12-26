@@ -1,4 +1,4 @@
-using Ancilla.FunctionApp.Services;
+using Ancilla.Agent.Services;
 using Moq;
 
 namespace Ancilla.FunctionApp.Tests;

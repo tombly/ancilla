@@ -1,6 +1,6 @@
 using Microsoft.Azure.Cosmos;
 
-namespace Ancilla.FunctionApp.Services;
+namespace Ancilla.Agent.Services;
 
 public interface IKnowledgeService
 {

@@ -1,7 +1,7 @@
-using Ancilla.FunctionApp.Services;
+using Ancilla.Agent.Services;
 using Microsoft.Extensions.Logging;
 
-namespace Ancilla.FunctionApp;
+namespace Ancilla.Agent;
 
 /// <summary>
 /// Intercepts incoming messages to handle special commands before passing to ChatService.

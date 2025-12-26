@@ -10,20 +10,16 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Aspire.OpenAI" />
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.CosmosDB" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" />
-    <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" />
-    <PackageReference Include="Microsoft.SemanticKernel" />
-    <PackageReference Include="Twilio" />
-    <PackageReference Include="Microsoft.Graph" />
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\Ancilla.Agent\Ancilla.Agent.csproj" />
     <ProjectReference Include="..\Ancilla.ServiceDefaults\Ancilla.ServiceDefaults.csproj" />
   </ItemGroup>
 

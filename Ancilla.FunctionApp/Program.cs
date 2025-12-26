@@ -1,5 +1,5 @@
-using Ancilla.FunctionApp;
-using Ancilla.FunctionApp.Services;
+using Ancilla.Agent;
+using Ancilla.Agent.Services;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

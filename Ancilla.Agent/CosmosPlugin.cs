@@ -1,8 +1,8 @@
 using System.ComponentModel;
-using Ancilla.FunctionApp.Services;
+using Ancilla.Agent.Services;
 using Microsoft.SemanticKernel;
 
-namespace Ancilla.FunctionApp;
+namespace Ancilla.Agent;
 
 /// <summary>
 /// Provides functions that the model may call for data storage and retrieval.

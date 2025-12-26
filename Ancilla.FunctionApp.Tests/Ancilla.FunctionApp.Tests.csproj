@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ancilla.FunctionApp\Ancilla.FunctionApp.csproj" />
+    <ProjectReference Include="..\Ancilla.Agent\Ancilla.Agent.csproj" />
   </ItemGroup>
 
   <ItemGroup>
