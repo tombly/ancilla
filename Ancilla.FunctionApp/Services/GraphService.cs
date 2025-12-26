@@ -7,6 +7,7 @@ namespace Ancilla.FunctionApp.Services;
 public interface IGraphService
 {
     Task<EventEntry[]> GetUserEventsAsync(DateTimeOffset start, DateTimeOffset end);
+    Task<EmailEntry[]> GetUserEmailsAsync(int maxResults = 10);
 }
 
 /// <summary>
@@ -88,6 +89,32 @@ public class GraphService : IGraphService
                 End = DateTimeOffset.Parse(e.End!.DateTime!)
             }).ToArray();
     }
+
+    public async Task<EmailEntry[]> GetUserEmailsAsync(int maxResults = 10)
+    {
+        var messages = await _appClient.Users[_entraUserId].Messages.GetAsync((config) =>
+        {
+            // Request specific properties.
+            config.QueryParameters.Select = ["subject", "from", "receivedDateTime", "bodyPreview", "isRead"];
+            // Get most recent emails.
+            config.QueryParameters.Top = maxResults;
+            // Sort by received date, most recent first.
+            config.QueryParameters.Orderby = ["receivedDateTime desc"];
+        });
+
+        if (messages?.Value == null)
+            return [];
+
+        return messages.Value
+            .Select(m => new EmailEntry
+            {
+                Subject = m.Subject ?? string.Empty,
+                From = m.From?.EmailAddress?.Address ?? string.Empty,
+                ReceivedDateTime = m.ReceivedDateTime ?? DateTimeOffset.MinValue,
+                BodyPreview = m.BodyPreview ?? string.Empty,
+                IsRead = m.IsRead ?? false
+            }).ToArray();
+    }
 }
 
 public class EventEntry
@@ -95,4 +122,13 @@ public class EventEntry
     public required string Description { get; init; }
     public required DateTimeOffset Start { get; init; }
     public required DateTimeOffset End { get; init; }
+}
+
+public class EmailEntry
+{
+    public required string Subject { get; init; }
+    public required string From { get; init; }
+    public required DateTimeOffset ReceivedDateTime { get; init; }
+    public required string BodyPreview { get; init; }
+    public required bool IsRead { get; init; }
 }

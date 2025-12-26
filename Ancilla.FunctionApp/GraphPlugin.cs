@@ -16,4 +16,13 @@ public class GraphPlugin(IGraphService graphService)
     {
         return await graphService.GetUserEventsAsync(start, end);
     }
+
+    [KernelFunction("get_recent_emails")]
+    [Description("Retrieves the most recent emails for the user.")]
+    public async Task<EmailEntry[]> GetRecentEmailsAsync(
+         [Description("The maximum number of emails to retrieve (default: 10)")] 
+         int maxResults = 10)
+    {
+        return await graphService.GetUserEmailsAsync(maxResults);
+    }
 }
