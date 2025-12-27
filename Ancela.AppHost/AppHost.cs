@@ -20,6 +20,7 @@ var graphUserIdParameter = builder.AddParameter("graph-user-id", true);
 var graphTenantIdParameter = builder.AddParameter("graph-tenant-id", true);
 var graphClientIdParameter = builder.AddParameter("graph-client-id", true);
 var graphClientSecretParameter = builder.AddParameter("graph-client-secret", true);
+var ynabAccessToken = builder.AddParameter("ynab-access-token", true);
 
 var openai = builder.AddOpenAI("openai").WithApiKey(openAiApiKeyParameter);
 var chat = openai.AddModel("chat", "gpt-5-mini");
@@ -59,6 +60,7 @@ var functionApp = builder.AddAzureFunctionsProject<Projects.Ancela_FunctionApp>(
     .WithEnvironment("GRAPH_TENANT_ID", graphTenantIdParameter)
     .WithEnvironment("GRAPH_CLIENT_ID", graphClientIdParameter)
     .WithEnvironment("GRAPH_CLIENT_SECRET", graphClientSecretParameter)
+    .WithEnvironment("YNAB_ACCESS_TOKEN", ynabAccessToken)
     .WithExternalHttpEndpoints();
 
 builder.Build().Run();

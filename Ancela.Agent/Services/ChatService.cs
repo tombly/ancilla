@@ -1,5 +1,6 @@
 using Ancela.Agent.SemanticKernel.Plugins.GraphPlugin;
 using Ancela.Agent.SemanticKernel.Plugins.MemoryPlugin;
+using Ancela.Agent.SemanticKernel.Plugins.YnabPlugin;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -9,7 +10,7 @@ using OpenAI;
 
 namespace Ancela.Agent.Services;
 
-public class ChatService(OpenAIClient _openAiClient, IHistoryService _historyService, MemoryPlugin _memoryPlugin, GraphPlugin _graphPlugin)
+public class ChatService(OpenAIClient _openAiClient, IHistoryService _historyService, MemoryPlugin _memoryPlugin, GraphPlugin _graphPlugin, YnabPlugin _ynabPlugin)
 {
   public async Task<string> Chat(string message, string userPhoneNumber, string agentPhoneNumber, SessionEntry session)
   {
@@ -25,6 +26,7 @@ public class ChatService(OpenAIClient _openAiClient, IHistoryService _historySer
     // Register plugins.
     kernel.Plugins.AddFromObject(_memoryPlugin);
     kernel.Plugins.AddFromObject(_graphPlugin);
+    kernel.Plugins.AddFromObject(_ynabPlugin);
 
     // Enable planning.
     var openAIPromptExecutionSettings = new OpenAIPromptExecutionSettings()
@@ -51,6 +53,7 @@ public class ChatService(OpenAIClient _openAiClient, IHistoryService _historySer
             - You have read-only access to the user's calendar events.
             - You have read-only access to the user's recent emails.
             - You have read-only access to the user's contacts.
+            - You have read-only access to the user's personal finances.
             - You can send emails.
             - The user's current local date and time is {localTime:f} ({session.TimeZone}).
             - Be concise in your responses because they are sent via SMS.

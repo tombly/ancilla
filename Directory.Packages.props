@@ -42,5 +42,8 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
     <!-- Microsoft Graph package -->
     <PackageVersion Include="Microsoft.Graph" Version="5.97.0" />
+    <!-- YNAB packages -->
+    <PackageVersion Include="Ynab.Api.Client" Version="1.73.1" />
+    <PackageVersion Include="Ynab.Api.Client.Extensions" Version="1.73.6" />
   </ItemGroup>
 </Project>

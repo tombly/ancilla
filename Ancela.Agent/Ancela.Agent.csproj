@@ -12,6 +12,8 @@
     <PackageReference Include="Microsoft.SemanticKernel" />
     <PackageReference Include="Twilio" />
     <PackageReference Include="Microsoft.Graph" />
+    <PackageReference Include="Ynab.Api.Client" />
+    <PackageReference Include="Ynab.Api.Client.Extensions" />
   </ItemGroup>
   
   <ItemGroup>
