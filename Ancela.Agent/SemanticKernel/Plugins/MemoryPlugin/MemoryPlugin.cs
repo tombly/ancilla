@@ -1,13 +1,12 @@
 using System.ComponentModel;
-using Ancela.Agent.Services;
 using Microsoft.SemanticKernel;
 
-namespace Ancela.Agent;
+namespace Ancela.Agent.SemanticKernel.Plugins.MemoryPlugin;
 
 /// <summary>
 /// Provides functions that the model may call for data storage and retrieval.
 /// </summary>
-public class CosmosPlugin(ITodoService _todoService, IKnowledgeService _knowledgeService)
+public class MemoryPlugin(ITodoClient _todoService, IKnowledgeClient _knowledgeService)
 {
     [KernelFunction("save_todo")]
     [Description("Saves a todo to the database")]

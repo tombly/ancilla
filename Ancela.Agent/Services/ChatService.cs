@@ -1,4 +1,5 @@
 using Ancela.Agent.SemanticKernel.Plugins.GraphPlugin;
+using Ancela.Agent.SemanticKernel.Plugins.MemoryPlugin;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -8,7 +9,7 @@ using OpenAI;
 
 namespace Ancela.Agent.Services;
 
-public class ChatService(OpenAIClient _openAiClient, ITodoService _todoService, IKnowledgeService _knowledgeService, IHistoryService _historyService, IGraphClient _graphClient)
+public class ChatService(OpenAIClient _openAiClient, ITodoClient _todoService, IKnowledgeClient _knowledgeService, IHistoryService _historyService, IGraphClient _graphClient)
 {
     public async Task<string> Chat(string message, string userPhoneNumber, string agentPhoneNumber, SessionEntry session)
     {
@@ -22,7 +23,7 @@ public class ChatService(OpenAIClient _openAiClient, ITodoService _todoService, 
         var kernel = builder.Build();
 
         // Register plugins. - TODO: How to get this into the DI?
-        kernel.Plugins.AddFromObject(new CosmosPlugin(_todoService, _knowledgeService));
+        kernel.Plugins.AddFromObject(new MemoryPlugin(_todoService, _knowledgeService));
         kernel.Plugins.AddFromObject(new GraphPlugin(_graphClient));
 
         // Enable planning.

@@ -1,22 +1,22 @@
 using Microsoft.Azure.Cosmos;
 
-namespace Ancela.Agent.Services;
+namespace Ancela.Agent.SemanticKernel.Plugins.MemoryPlugin;
 
-public interface IKnowledgeService
+public interface ITodoClient
 {
-    Task SaveKnowledgeAsync(string agentPhoneNumber, string userPhoneNumber, string content);
-    Task<KnowledgeEntry[]> GetKnowledgeAsync(string agentPhoneNumber);
-    Task DeleteKnowledgeAsync(Guid id, string agentPhoneNumber);
+    Task SaveTodoAsync(string agentPhoneNumber, string userPhoneNumber, string content);
+    Task<TodoEntry[]> GetTodosAsync(string agentPhoneNumber);
+    Task DeleteTodoAsync(Guid id, string agentPhoneNumber);
 }
 
 /// <summary>
-/// Service for managing knowledge entries in Cosmos DB. Entries are partitioned by the AI's
-/// phone number so that all knowledge for a given AI are stored together.
+/// Service for managing todos in Cosmos DB. Entries are partitioned by the AI's
+/// phone number so that all todos for a given AI are stored together.
 /// </summary>
-public class KnowledgeService(CosmosClient _cosmosClient) : IKnowledgeService
+public class TodoClient(CosmosClient _cosmosClient) : ITodoClient
 {
     private const string DatabaseName = "anceladb";
-    private const string ContainerName = "knowledge";
+    private const string ContainerName = "todos";
 
     private async Task<Container> GetContainerAsync()
     {
@@ -27,13 +27,13 @@ public class KnowledgeService(CosmosClient _cosmosClient) : IKnowledgeService
         return containerResponse.Container;
     }
 
-    public async Task SaveKnowledgeAsync(string agentPhoneNumber, string userPhoneNumber, string content)
+    public async Task SaveTodoAsync(string agentPhoneNumber, string userPhoneNumber, string content)
     {
         ArgumentNullException.ThrowIfNull(agentPhoneNumber);
         ArgumentNullException.ThrowIfNull(userPhoneNumber);
         ArgumentNullException.ThrowIfNull(content);
 
-        var knowledge = new
+        var todo = new
         {
             id = Guid.NewGuid().ToString(),
             content,
@@ -44,10 +44,10 @@ public class KnowledgeService(CosmosClient _cosmosClient) : IKnowledgeService
         };
 
         var container = await GetContainerAsync();
-        await container.CreateItemAsync(knowledge, new PartitionKey(knowledge.agentPhoneNumber));
+        await container.CreateItemAsync(todo, new PartitionKey(todo.agentPhoneNumber));
     }
 
-    public async Task<KnowledgeEntry[]> GetKnowledgeAsync(string agentPhoneNumber)
+    public async Task<TodoEntry[]> GetTodosAsync(string agentPhoneNumber)
     {
         ArgumentNullException.ThrowIfNull(agentPhoneNumber);
 
@@ -55,30 +55,30 @@ public class KnowledgeService(CosmosClient _cosmosClient) : IKnowledgeService
 
         var query = new QueryDefinition("SELECT * FROM c WHERE c.agentPhoneNumber = @phoneNumber")
                         .WithParameter("@phoneNumber", agentPhoneNumber);
-        var iterator = container.GetItemQueryIterator<KnowledgeEntry>(query);
-        var entries = new List<KnowledgeEntry>();
+        var iterator = container.GetItemQueryIterator<TodoEntry>(query);
+        var todos = new List<TodoEntry>();
         while (iterator.HasMoreResults)
         {
             var response = await iterator.ReadNextAsync();
-            entries.AddRange(response);
+            todos.AddRange(response);
         }
-        return [.. entries];
+        return [.. todos];
     }
 
-    public async Task DeleteKnowledgeAsync(Guid id, string agentPhoneNumber)
+    public async Task DeleteTodoAsync(Guid id, string agentPhoneNumber)
     {
         ArgumentNullException.ThrowIfNull(agentPhoneNumber);
 
         var container = await GetContainerAsync();
 
         var response = await container.ReadItemAsync<dynamic>(id.ToString(), new PartitionKey(agentPhoneNumber));
-        var knowledge = response.Resource;
-        knowledge.deleted = DateTimeOffset.Now;
-        await container.ReplaceItemAsync(knowledge, id.ToString(), new PartitionKey(agentPhoneNumber));
+        var todo = response.Resource;
+        todo.deleted = DateTimeOffset.Now;
+        await container.ReplaceItemAsync(todo, id.ToString(), new PartitionKey(agentPhoneNumber));
     }
 }
 
-public class KnowledgeEntry
+public class TodoEntry
 {
     public Guid Id { get; set; }
     public required string Content { get; set; }

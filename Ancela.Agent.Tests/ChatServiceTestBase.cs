@@ -1,4 +1,5 @@
 using Ancela.Agent.SemanticKernel.Plugins.GraphPlugin;
+using Ancela.Agent.SemanticKernel.Plugins.MemoryPlugin;
 using Ancela.Agent.Services;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -21,8 +22,8 @@ public abstract class ChatServiceTestBase
 
     // Mocked data services
     protected readonly Mock<IHistoryService> MockHistoryService;
-    protected readonly Mock<ITodoService> MockTodoService;
-    protected readonly Mock<IKnowledgeService> MockKnowledgeService;
+    protected readonly Mock<ITodoClient> MockTodoService;
+    protected readonly Mock<IKnowledgeClient> MockKnowledgeService;
     protected readonly Mock<IGraphClient> MockGraphClient;
 
     // System under test
@@ -50,8 +51,8 @@ public abstract class ChatServiceTestBase
 
         // Setup mocked services with default behaviors
         MockHistoryService = new Mock<IHistoryService>();
-        MockTodoService = new Mock<ITodoService>();
-        MockKnowledgeService = new Mock<IKnowledgeService>();
+        MockTodoService = new Mock<ITodoClient>();
+        MockKnowledgeService = new Mock<IKnowledgeClient>();
         MockGraphClient = new Mock<IGraphClient>();
 
         // Default: return empty history (fresh conversation)
