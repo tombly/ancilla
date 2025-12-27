@@ -7,7 +7,7 @@ public class GraphPlugin(IGraphClient graphClient)
 {
     [KernelFunction("get_calendar_events")]
     [Description("Retrieves calendar events for the user within the specified date range.")]
-    public async Task<EventEntry[]> GetCalendarEventsAsync(
+    public async Task<EventModel[]> GetCalendarEventsAsync(
          [Description("The start date and time of the range to query")]
          DateTimeOffset start,
          [Description("The end date and time of the range to query")]
@@ -18,7 +18,7 @@ public class GraphPlugin(IGraphClient graphClient)
 
     [KernelFunction("get_recent_emails")]
     [Description("Retrieves the most recent emails for the user.")]
-    public async Task<EmailEntry[]> GetRecentEmailsAsync(
+    public async Task<EmailModel[]> GetRecentEmailsAsync(
          [Description("The maximum number of emails to retrieve (default: 10)")]
          int maxResults = 50)
     {
@@ -27,7 +27,7 @@ public class GraphPlugin(IGraphClient graphClient)
 
     [KernelFunction("get_contacts")]
     [Description("Retrieves the user's contacts from their address book.")]
-    public async Task<ContactEntry[]> GetContactsAsync(
+    public async Task<ContactModel[]> GetContactsAsync(
          [Description("The maximum number of contacts to retrieve (default: 50)")]
          int maxResults = 100)
     {
@@ -36,7 +36,7 @@ public class GraphPlugin(IGraphClient graphClient)
 
     [KernelFunction("get_contact_by_name")]
     [Description("Searches for and retrieves a specific contact by their name (searches display name, first name, and last name).")]
-    public async Task<ContactEntry?> GetContactByNameAsync(
+    public async Task<ContactModel?> GetContactByNameAsync(
          [Description("The name to search for")]
          string name)
     {

@@ -6,10 +6,10 @@ namespace Ancela.Agent.SemanticKernel.Plugins.GraphPlugin;
 
 public interface IGraphClient
 {
-    Task<EventEntry[]> GetUserEventsAsync(DateTimeOffset start, DateTimeOffset end);
-    Task<EmailEntry[]> GetUserEmailsAsync(int maxResults = 10);
-    Task<ContactEntry[]> GetUserContactsAsync(int maxResults = 50);
-    Task<ContactEntry?> GetUserContactByNameAsync(string name);
+    Task<EventModel[]> GetUserEventsAsync(DateTimeOffset start, DateTimeOffset end);
+    Task<EmailModel[]> GetUserEmailsAsync(int maxResults = 10);
+    Task<ContactModel[]> GetUserContactsAsync(int maxResults = 50);
+    Task<ContactModel?> GetUserContactByNameAsync(string name);
     Task<string> SendEmailAsync(string toAddress, string subject, string body);
 }
 
@@ -43,7 +43,7 @@ public class GraphClient : IGraphClient
         _appClient = new GraphServiceClient(clientSecretCredential, ["https://graph.microsoft.com/.default"]);
     }
 
-    public async Task<EventEntry[]> GetUserEventsAsync(DateTimeOffset start, DateTimeOffset end)
+    public async Task<EventModel[]> GetUserEventsAsync(DateTimeOffset start, DateTimeOffset end)
     {
         var startDate = start.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ");
         var endDate = end.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ");
@@ -80,7 +80,7 @@ public class GraphClient : IGraphClient
         return allEvents
             .Where(e => e.Start?.DateTime != null && e.End?.DateTime != null)
             .OrderBy(e => e.Start!.DateTime)
-            .Select(e => new EventEntry
+            .Select(e => new EventModel
             {
                 Description = e.Subject ?? string.Empty,
                 Start = DateTimeOffset.Parse(e.Start!.DateTime!),
@@ -88,7 +88,7 @@ public class GraphClient : IGraphClient
             }).ToArray();
     }
 
-    public async Task<EmailEntry[]> GetUserEmailsAsync(int maxResults = 10)
+    public async Task<EmailModel[]> GetUserEmailsAsync(int maxResults = 10)
     {
         var messages = await _appClient.Users[_entraUserId].Messages.GetAsync((config) =>
         {
@@ -104,7 +104,7 @@ public class GraphClient : IGraphClient
             return [];
 
         return messages.Value
-            .Select(m => new EmailEntry
+            .Select(m => new EmailModel
             {
                 Subject = m.Subject ?? string.Empty,
                 From = m.From?.EmailAddress?.Address ?? string.Empty,
@@ -114,7 +114,7 @@ public class GraphClient : IGraphClient
             }).ToArray();
     }
 
-    public async Task<ContactEntry[]> GetUserContactsAsync(int maxResults = 50)
+    public async Task<ContactModel[]> GetUserContactsAsync(int maxResults = 50)
     {
         var contacts = await _appClient.Users[_entraUserId].Contacts.GetAsync((config) =>
         {
@@ -130,7 +130,7 @@ public class GraphClient : IGraphClient
             return [];
 
         return contacts.Value
-            .Select(c => new ContactEntry
+            .Select(c => new ContactModel
             {
                 DisplayName = c.DisplayName ?? string.Empty,
                 EmailAddresses = c.EmailAddresses?.Select(e => e.Address ?? string.Empty).Where(e => !string.IsNullOrEmpty(e)).ToArray() ?? [],
@@ -141,7 +141,7 @@ public class GraphClient : IGraphClient
             }).ToArray();
     }
 
-    public async Task<ContactEntry?> GetUserContactByNameAsync(string name)
+    public async Task<ContactModel?> GetUserContactByNameAsync(string name)
     {
         var searchTerm = name.Trim();
         
@@ -164,7 +164,7 @@ public class GraphClient : IGraphClient
         
         var contact = exactMatch ?? contacts.Value.First();
 
-        return new ContactEntry
+        return new ContactModel
         {
             DisplayName = contact.DisplayName ?? string.Empty,
             EmailAddresses = contact.EmailAddresses?.Select(e => e.Address ?? string.Empty).Where(e => !string.IsNullOrEmpty(e)).ToArray() ?? [],
@@ -205,30 +205,4 @@ public class GraphClient : IGraphClient
 
         return $"Email sent successfully to {toAddress}";
     }
-}
-
-public class EventEntry
-{
-    public required string Description { get; init; }
-    public required DateTimeOffset Start { get; init; }
-    public required DateTimeOffset End { get; init; }
-}
-
-public class EmailEntry
-{
-    public required string Subject { get; init; }
-    public required string From { get; init; }
-    public required DateTimeOffset ReceivedDateTime { get; init; }
-    public required string BodyPreview { get; init; }
-    public required bool IsRead { get; init; }
-}
-
-public class ContactEntry
-{
-    public required string DisplayName { get; init; }
-    public required string[] EmailAddresses { get; init; }
-    public required string MobilePhone { get; init; }
-    public required string[] BusinessPhones { get; init; }
-    public required string CompanyName { get; init; }
-    public required string JobTitle { get; init; }
 }

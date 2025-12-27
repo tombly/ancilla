@@ -186,7 +186,7 @@ public class ChatServiceGraphTests : ChatServiceTestBase
     /// <summary>
     /// Configures the mock to return specific calendar events when GetUserEventsAsync is called.
     /// </summary>
-    protected void SetupCalendarEvents(params EventEntry[] events)
+    protected void SetupCalendarEvents(params EventModel[] events)
     {
         MockGraphClient
             .Setup(g => g.GetUserEventsAsync(It.IsAny<DateTimeOffset>(), It.IsAny<DateTimeOffset>()))
@@ -196,9 +196,9 @@ public class ChatServiceGraphTests : ChatServiceTestBase
     /// <summary>
     /// Creates an EventEntry for testing.
     /// </summary>
-    protected static EventEntry CreateEvent(string description, DateTimeOffset start, DateTimeOffset end)
+    protected static EventModel CreateEvent(string description, DateTimeOffset start, DateTimeOffset end)
     {
-        return new EventEntry
+        return new EventModel
         {
             Description = description,
             Start = start,
