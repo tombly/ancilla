@@ -15,12 +15,14 @@ public static class DependencyModule
     {
         ArgumentNullException.ThrowIfNull(builder);
 
+        // Register Semantic Kernel plugins.
         builder.Services.AddSingleton<IGraphClient, GraphClient>();
         builder.Services.AddSingleton<GraphPlugin>();
         builder.Services.AddSingleton<IKnowledgeClient, KnowledgeClient>();
         builder.Services.AddSingleton<ITodoClient, TodoClient>();
         builder.Services.AddSingleton<MemoryPlugin>();
 
+        // Register core services.
         builder.Services.AddSingleton<ChatService>();
         builder.Services.AddSingleton<IHistoryService, HistoryService>();
         builder.Services.AddSingleton<ISessionService, SessionService>();

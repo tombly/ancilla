@@ -19,11 +19,6 @@ public interface IGraphClient
 public class GraphClient : IGraphClient
 {
     /// <summary>
-    /// The client secret credential for app-only authentication.
-    /// </summary>
-    private readonly ClientSecretCredential _clientSecretCredential;
-
-    /// <summary>
     /// The Graph service client for app-only authentication.
     /// </summary>
     private readonly GraphServiceClient _appClient;
@@ -41,11 +36,11 @@ public class GraphClient : IGraphClient
         var clientId = Environment.GetEnvironmentVariable("GRAPH_CLIENT_ID") ?? throw new Exception("GRAPH_CLIENT_ID not set");
         var clientSecret = Environment.GetEnvironmentVariable("GRAPH_CLIENT_SECRET") ?? throw new Exception("GRAPH_CLIENT_SECRET not set");
 
-        _clientSecretCredential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+        var clientSecretCredential = new ClientSecretCredential(tenantId, clientId, clientSecret);
 
         // Use the default scope, which will request the scopes configured on the
         // app registration
-        _appClient = new GraphServiceClient(_clientSecretCredential, ["https://graph.microsoft.com/.default"]);
+        _appClient = new GraphServiceClient(clientSecretCredential, ["https://graph.microsoft.com/.default"]);
     }
 
     public async Task<EventEntry[]> GetUserEventsAsync(DateTimeOffset start, DateTimeOffset end)
