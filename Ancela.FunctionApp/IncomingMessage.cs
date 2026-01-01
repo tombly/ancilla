@@ -26,14 +26,26 @@ public class MessageFunction(ILogger<MessageFunction> _logger, CommandIntercepto
             var userPhoneNumber = formValues["From"];
             var agentPhoneNumber = formValues["To"];
 
-            if (string.IsNullOrWhiteSpace(body) || string.IsNullOrWhiteSpace(userPhoneNumber) || string.IsNullOrWhiteSpace(agentPhoneNumber))
+            if (string.IsNullOrWhiteSpace(userPhoneNumber) || string.IsNullOrWhiteSpace(agentPhoneNumber))
             {
                 var badResponse = request.CreateResponse(HttpStatusCode.BadRequest);
                 await badResponse.WriteStringAsync("Missing required parameters.");
                 return badResponse;
             }
 
-            var reply = await _chatInterceptor.HandleMessage(body, userPhoneNumber, agentPhoneNumber);
+            // Extract media URLs if present
+            var mediaUrls = new List<string>();
+            if (int.TryParse(formValues["NumMedia"], out var numMedia) && numMedia > 0)
+            {
+                for (int i = 0; i < numMedia; i++)
+                {
+                    var mediaUrl = formValues[$"MediaUrl{i}"];
+                    if (!string.IsNullOrWhiteSpace(mediaUrl))
+                        mediaUrls.Add(mediaUrl);
+                }
+            }
+
+            var reply = await _chatInterceptor.HandleMessage(body ?? string.Empty, userPhoneNumber, agentPhoneNumber, mediaUrls.ToArray());
 
             var response = request.CreateResponse(HttpStatusCode.OK);
             if (reply != null)

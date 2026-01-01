@@ -12,7 +12,7 @@ namespace Ancela.Agent.Services;
 
 public class ChatService(OpenAIClient _openAiClient, IHistoryService _historyService, MemoryPlugin _memoryPlugin, GraphPlugin _graphPlugin, YnabPlugin _ynabPlugin)
 {
-  public async Task<string> Chat(string message, string userPhoneNumber, string agentPhoneNumber, SessionEntry session)
+  public async Task<string> Chat(string message, string userPhoneNumber, string agentPhoneNumber, SessionEntry session, string[] mediaUrls)
   {
     var builder = Kernel.CreateBuilder();
 

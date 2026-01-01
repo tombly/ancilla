@@ -14,8 +14,9 @@ public class CommandInterceptor(ILogger<CommandInterceptor> _logger, ISessionSer
     /// <param name="message">The message content</param>
     /// <param name="userPhoneNumber">The sender's phone number</param>
     /// <param name="agentPhoneNumber">The recipient's phone number (agent's number)</param>
+    /// <param name="mediaUrls">List of media URLs attached to the message</param>
     /// <returns>The response message, or null if no session exists</returns>
-    public async Task<string?> HandleMessage(string message, string userPhoneNumber, string agentPhoneNumber)
+    public async Task<string?> HandleMessage(string message, string userPhoneNumber, string agentPhoneNumber, string[] mediaUrls)
     {
         // Check if the message is the "hello" command (case-insensitive).
         if (message.Trim().Equals("hello ancela", StringComparison.OrdinalIgnoreCase))
@@ -56,6 +57,6 @@ public class CommandInterceptor(ILogger<CommandInterceptor> _logger, ISessionSer
         }
 
         // No interception needed, pass to ChatService.
-        return await _chatService.Chat(message, userPhoneNumber, agentPhoneNumber, session);
+        return await _chatService.Chat(message, userPhoneNumber, agentPhoneNumber, session, mediaUrls);
     }
 }
