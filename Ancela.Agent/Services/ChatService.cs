@@ -14,6 +14,11 @@ public class ChatService(OpenAIClient _openAiClient, IHistoryService _historySer
 {
   public async Task<string> Chat(string message, string userPhoneNumber, string agentPhoneNumber, SessionEntry session, string[] mediaUrls)
   {
+    // TODO: Handle media URLs: Save to blob storage with metadata stored by the memory plugin.
+    //       Use image analysis to describe images and extract text (store both with metadata).
+    //       Allow only images for now.
+    //       Need to handle the scenario where there is no message and only media.  
+
     var builder = Kernel.CreateBuilder();
 
     // Use the injected OpenAI client from Aspire.
@@ -61,6 +66,7 @@ public class ChatService(OpenAIClient _openAiClient, IHistoryService _historySer
               list of todo titles, oldest first. Always exclude deleted todos.
             - You have a separate chat history for each user, but your memory is
               shared across all users.
+            - Don't say "anything else?" at the end of your responses.
             """;
     history.AddSystemMessage(instructions);
 

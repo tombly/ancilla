@@ -1,8 +1,6 @@
 # Ancela
 
-**AI Assistant**
-
-Ancela is an AI-powered memory assistant that helps users manage todos, access their calendar, read emails, and interact with contacts through SMS messaging. Built with .NET Aspire, Azure Functions, Azure Cosmos DB, and Microsoft Graph, it provides an intelligent, conversational interface for managing personal information and productivity.
+Ancela is an AI assistant that helps users manage their todos, calendar, emails, and contacts through SMS messaging. Built with .NET Aspire, Azure Functions, Azure Cosmos DB, and Microsoft Graph, it provides an intelligent, conversational interface for managing personal information and productivity.
 
 ## Features
 
@@ -53,23 +51,61 @@ Ancela is built using modern cloud-native patterns:
    git clone https://github.com/tombly/ancela.git
    cd ancela
    ```
+2. **Configure Graph Access**
 
-2. **Configure user secrets**
+- Navigate to your organization's Entra admin center [https://aad.portal.azure.com/] and login with a Global administrator account.
+
+- Select a directory and then select App registrations under Manage.
+
+- Select New registration. Enter a name for your application, for example, Ancela AI.
+
+- Set Supported account types to Accounts in this organizational directory only.
+
+- Leave Redirect URI empty.
+
+- Select Register. On the application's Overview page, copy the value of the Application (client) ID and Directory (tenant) ID and save them, you will need these values in the next step.
+
+- Select API permissions under Manage.
+
+- Remove the default User.Read permission under Configured permissions by selecting the ellipses (...) in its row and selecting Remove permission.
+
+- Perform the following steps for each of the permissions `User.Read.All`, `Calendars.ReadWrite`, `Contacts.Read`, `Mail.Read`, and `Mail.Send`:
+
+  - Select Add a permission, then Microsoft Graph.
+
+  - Select Application permissions.
+
+  - Select User.Read.All, then select Add permissions.
+
+- Select Grant admin consent for..., then select Yes to provide admin consent for the selected permission.
+
+- Select Certificates and secrets under Manage, then select New client secret.
+
+- Enter a description, choose a duration, and select Add.
+
+- Copy the secret from the Value column, you will need it in the next step.
+
+3. **Configure user secrets**
    
-   Navigate to the AppHost project and set your secrets:
+   Navigate to the AppHost project folder and set your secrets:
    ```bash
    cd Ancela.AppHost
    dotnet user-secrets set Parameters:openai-api-key "your-openai-api-key"
    dotnet user-secrets set Parameters:twilio-account-sid "your-twilio-account-sid"
    dotnet user-secrets set Parameters:twilio-auth-token "your-twilio-auth-token"
    dotnet user-secrets set Parameters:twilio-phone-number "your-twilio-phone-number"
+   dotnet user-secrets set Parameters:graph-user-id "your-entra-user-id"
+   dotnet user-secrets set Parameters:graph-tenant-id "your-entra-tenant-id"
+   dotnet user-secrets set Parameters:graph-client-id "your-graph-app-client-id"
+   dotnet user-secrets set Parameters:graph-client-secret "your-graph-app-client-secret"
+   dotnet user-secrets set Parameters:ynab-access-token "your-ynab-access-token"
    ```
 
-3. **Update the resource group name**
+4. **Update the resource group name**
    
-   Edit `FixedNameInfrastructureResolver.cs` to set your Azure resource group name.
+   Edit `FixedNameInfrastructureResolver.cs` and`configure_cosmos.sh` to set your resource group name and cosmos resource name.
 
-4. **Run locally**
+5. **Run locally**
    ```bash
    dotnet run --project Ancela.AppHost
    ```
@@ -110,166 +146,46 @@ Send an SMS to your Twilio number:
 hello ancela
 ```
 
-Response:
+### Knowledge
+
 ```
-Welcome! I'm your AI memory assistant. I can help you save and retrieve todos via SMS. Try sending me a todo!
+Remember that my favorite color is blue
 ```
 
-### Saving Todos
-
-Simply send natural language messages:
-```
-Remember that my dentist appointment is next Tuesday at 2pm
-```
+### Todos
 
 ```
 Save a todo: buy milk, eggs, and bread
-```
-
-### Retrieving Todos
-
-Ask for your todos in natural language:
-```
-What todos do I have?
-```
-
-```
 List my todos
-```
-
-```
-Do I have any appointments?
-```
-
-### Deleting Todos
-
-Request deletion naturally:
-```
-Delete the todo about the dentist
-```
-
-```
 Remove the grocery list
 ```
 
-### Checking Your Calendar
+### Calendar
 
-Ask about your schedule:
 ```
 What's on my calendar today?
-```
-
-```
 Do I have any meetings tomorrow?
+Create a calendar event for lunch with Sarah next Friday at 1 PM
 ```
 
-```
-Show me my calendar for next week
-```
+### Emails
 
-### Reading Emails
-
-Check your recent messages:
 ```
 Do I have any new emails?
-```
-
-```
-Show me my recent emails
-```
-
-```
-What's in my inbox?
-```
-
-### Sending Emails
-
-Send emails through natural conversation:
-```
-Send an email to john@example.com about the project status
-```
-
-```
 Email Sarah and let her know the meeting is rescheduled
 ```
 
-### Looking Up Contacts
+### Contacts
 
-Find contact information:
 ```
 What's John's email address?
 ```
 
-```
-Find Sarah's phone number
-```
-
-```
-Show me my contacts
-```
-
 ### Ending a Session
 
-When you're done:
 ```
 goodbye ancela
 ```
-
-Response:
-```
-Goodbye! Your session has been ended. Your todos have been preserved. Send 'hello ancela' to start a new session.
-```
-
-## Configuration
-
-### Environment Variables
-
-The following environment variables are used (configured via user secrets in development):
-
-- `Parameters:openai-api-key` - Your OpenAI API key
-- `Parameters:twilio-account-sid` - Twilio account SID
-- `Parameters:twilio-auth-token` - Twilio auth token
-- `Parameters:twilio-phone-number` - Your Twilio phone number
-
-## Project Structure
-
-```
-Ancela/
-├── Ancela.AppHost/           # Aspire orchestration
-│   ├── AppHost.cs             # Service definitions
-│   ├── aspire-output/         # Generated Bicep templates
-│   └── FixedNameInfrastructureResolver.cs
-├── Ancela.FunctionApp/       # Azure Functions app
-│   ├── CommandInterceptor.cs # Command handling
-│   ├── CosmosPlugin.cs        # Semantic Kernel plugin
-│   ├── IncomingMessage.cs     # HTTP message endpoint
-│   ├── IncomingSms.cs         # Twilio webhook endpoint
-│   └── Services/              # Business logic services
-│       ├── ChatService.cs
-│       ├── HistoryService.cs
-│       ├── TodoService.cs
-│       ├── SessionService.cs
-│       └── SmsService.cs
-└── Ancela.ServiceDefaults/   # Shared configuration
-```
-
-## Data Model
-
-### Sessions
-- Partitioned by `agentPhoneNumber`
-- Tracks active user sessions
-- Stores user timezone preferences
-
-### Todos
-- Partitioned by `agentPhoneNumber`
-- Associated with `userPhoneNumber`
-- Supports soft deletion
-- Preserved when sessions end
-
-### History
-- Partitioned by `agentPhoneNumber`
-- Maintains conversation context
-- One entry per user message and AI response
 
 ## License
 

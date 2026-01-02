@@ -7,10 +7,11 @@ namespace Ancela.Agent.SemanticKernel.Plugins.GraphPlugin;
 public interface IGraphClient
 {
     Task<EventModel[]> GetUserEventsAsync(DateTimeOffset start, DateTimeOffset end);
-    Task<EmailModel[]> GetUserEmailsAsync(int maxResults = 10);
-    Task<ContactModel[]> GetUserContactsAsync(int maxResults = 50);
-    Task<ContactModel?> GetUserContactByNameAsync(string name);
+    Task<EventModel> CreateEventAsync(string subject, string start, string end, string? location = null, string? body = null, bool isAllDay = false);
+    Task<EmailModel[]> GetUserEmailsAsync(int maxResults = 50);
     Task<string> SendEmailAsync(string toAddress, string subject, string body);
+    Task<ContactModel[]> GetUserContactsAsync(int maxResults = 100);
+    Task<ContactModel?> GetUserContactByNameAsync(string name);
 }
 
 /// <summary>
@@ -42,6 +43,8 @@ public class GraphClient : IGraphClient
         // app registration
         _appClient = new GraphServiceClient(clientSecretCredential, ["https://graph.microsoft.com/.default"]);
     }
+
+    #region Calendar
 
     public async Task<EventModel[]> GetUserEventsAsync(DateTimeOffset start, DateTimeOffset end)
     {
@@ -88,6 +91,56 @@ public class GraphClient : IGraphClient
             }).ToArray();
     }
 
+    /// <summary>
+    /// Creates a new calendar event. The start/end dates must be in the format:
+    /// "yyyy-MM-ddTHH:mm:ss" and if isAllDay is true then the time value must be
+    /// midnight.
+    public async Task<EventModel> CreateEventAsync(string subject, string start, string end, string? location = null, string? body = null, bool isAllDay = false)
+    {
+        var newEvent = new Event
+        {
+            Subject = subject,
+            Start = new DateTimeTimeZone
+            {
+                DateTime = start,
+                TimeZone = TimeZoneInfo.Local.Id
+            },
+            End = new DateTimeTimeZone
+            {
+                DateTime = end,
+                TimeZone = TimeZoneInfo.Local.Id
+            },
+            IsAllDay = isAllDay
+        };
+
+        if (!string.IsNullOrEmpty(location))
+        {
+            newEvent.Location = new Location { DisplayName = location };
+        }
+
+        if (!string.IsNullOrEmpty(body))
+        {
+            newEvent.Body = new ItemBody
+            {
+                ContentType = BodyType.Text,
+                Content = body
+            };
+        }
+
+        var createdEvent = await _appClient.Users[_entraUserId].Events.PostAsync(newEvent);
+
+        return new EventModel
+        {
+            Description = createdEvent?.Subject ?? string.Empty,
+            Start = DateTimeOffset.Parse(createdEvent?.Start?.DateTime ?? string.Empty),
+            End = DateTimeOffset.Parse(createdEvent?.End?.DateTime ?? string.Empty)
+        };
+    }
+
+    #endregion
+
+    #region Email
+
     public async Task<EmailModel[]> GetUserEmailsAsync(int maxResults = 10)
     {
         var messages = await _appClient.Users[_entraUserId].Messages.GetAsync((config) =>
@@ -113,6 +166,41 @@ public class GraphClient : IGraphClient
                 IsRead = m.IsRead ?? false
             }).ToArray();
     }
+
+    public async Task<string> SendEmailAsync(string toAddress, string subject, string body)
+    {
+        var message = new Message
+        {
+            Subject = subject,
+            Body = new ItemBody
+            {
+                ContentType = BodyType.Text,
+                Content = body
+            },
+            ToRecipients =
+            [
+                new Recipient
+                {
+                    EmailAddress = new EmailAddress
+                    {
+                        Address = toAddress
+                    }
+                }
+            ]
+        };
+
+        await _appClient.Users[_entraUserId].SendMail.PostAsync(new Microsoft.Graph.Users.Item.SendMail.SendMailPostRequestBody
+        {
+            Message = message,
+            SaveToSentItems = true
+        });
+
+        return $"Email sent successfully to {toAddress}";
+    }
+
+    #endregion
+
+    #region Contacts
 
     public async Task<ContactModel[]> GetUserContactsAsync(int maxResults = 50)
     {
@@ -175,34 +263,5 @@ public class GraphClient : IGraphClient
         };
     }
 
-    public async Task<string> SendEmailAsync(string toAddress, string subject, string body)
-    {
-        var message = new Message
-        {
-            Subject = subject,
-            Body = new ItemBody
-            {
-                ContentType = BodyType.Text,
-                Content = body
-            },
-            ToRecipients =
-            [
-                new Recipient
-                {
-                    EmailAddress = new EmailAddress
-                    {
-                        Address = toAddress
-                    }
-                }
-            ]
-        };
-
-        await _appClient.Users[_entraUserId].SendMail.PostAsync(new Microsoft.Graph.Users.Item.SendMail.SendMailPostRequestBody
-        {
-            Message = message,
-            SaveToSentItems = true
-        });
-
-        return $"Email sent successfully to {toAddress}";
-    }
+    #endregion
 }
