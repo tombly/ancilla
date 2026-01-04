@@ -32,8 +32,8 @@ public record ChatQueueMessage
 {
     public const string QueueName = "chat-queue";
 
-    public string Content { get; set; } = string.Empty;
-    public string UserPhoneNumber { get; set; } = string.Empty;
-    public string AgentPhoneNumber { get; set; } = string.Empty;
-    public string[] MediaUrls { get; set; } = [];
+    public string Content { get; init; } = string.Empty;
+    public string UserPhoneNumber { get; init; } = string.Empty;
+    public string AgentPhoneNumber { get; init; } = string.Empty;
+    public string[] MediaUrls { get; init; } = [];
 }
