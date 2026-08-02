@@ -137,16 +137,20 @@ public class Agent(IKernelFactory _kernelFactory, IChatCompletionService _chatCo
         // not be added to the standing-rule or scheduled-task prompts.
         var activeProjectsContext = await BuildActiveProjectsContextAsync(agentPhoneNumber);
 
-        var instructions = $"""
+        // Deliberately non-interpolated: this block plus the tool schemas form the prompt
+        // prefix OpenAI caches, and the cache only hits when that prefix is byte-identical
+        // across requests. Everything variable (the user, their local time, location, and
+        // active projects) goes in the "Current context" message appended after history —
+        // a single interpolated value here, even on the last line, drops the hit rate to zero.
+        const string instructions = """
             - You are an AI agent named Ancela.
             - You are a singular AI instance serving multiple users.
             - You have a separate chat history for each user, but your memory is
               shared across all users.
             - You communicate with users via SMS so be concise in your responses.
-            - Your phone number is '{agentPhoneNumber}'.
-            - You are currently chatting with {user.Name}, whose phone number is '{userPhoneNumber}'.
-            - The user's current local date and time is {localTime:f} ({user.TimeZone}).
-            - The user's home location is {user.Location}. Use it as the default for location-dependent requests (weather, local conditions, "near me") unless the user names a different place.
+            - Your phone number, who you're chatting with, their current local date and
+              time, their home location, and their active projects are given in the
+              "Current context" block that follows the conversation history.
             - You have the following capabilities:
                 1. To-Dos:
                    - You can create, read, update, and delete to-dos for the user.
@@ -178,7 +182,7 @@ public class Agent(IKernelFactory _kernelFactory, IChatCompletionService _chatCo
                      message; todos are passive lists with no scheduling.
                    - When the user gives a relative time ("tomorrow afternoon", "in two
                      hours"), resolve it to an absolute ISO-8601 timestamp using the
-                     user's current local date/time and timezone shown above, then ALWAYS
+                     user's current local date/time and timezone from Current context, then ALWAYS
                      confirm the resolved time back to the user in plain language ("Set
                      for tomorrow at 2pm — sound good?"). Never schedule a reminder for
                      a past time.
@@ -272,7 +276,6 @@ public class Agent(IKernelFactory _kernelFactory, IChatCompletionService _chatCo
                    - Summarize for SMS: lead with anything failed, degraded, or flagged for review;
                      if everything is healthy and all-clear, say so in one short sentence. Report
                      exactly what the tools returned — never guess or soften results.
-            {activeProjectsContext}
             - Use the appropriate plugin functions to perform actions related to
               todos, knowledge, projects, calendar, email, contacts, personal finance,
               reminders, standing rules, scheduled tasks, SMS, and reMarkable.
@@ -291,6 +294,18 @@ public class Agent(IKernelFactory _kernelFactory, IChatCompletionService _chatCo
             else if (entry.MessageType == MessageType.Agent)
                 chatHistory.AddAssistantMessage(entry.Content);
         }
+
+        // Everything that varies per request or per user. Kept out of the system message (see
+        // the comment there) and placed after history so it is both cache-safe and the most
+        // recent thing the model reads before the user's turn.
+        chatHistory.AddSystemMessage($"""
+            Current context:
+            - Your phone number is '{agentPhoneNumber}'.
+            - You are currently chatting with {user.Name}, whose phone number is '{userPhoneNumber}'.
+            - The user's current local date and time is {localTime:f} ({user.TimeZone}).
+            - The user's home location is {user.Location}. Use it as the default for location-dependent requests (weather, local conditions, "near me") unless the user names a different place.
+            {activeProjectsContext}
+            """);
 
         // Hybrid media handling: when images arrived this turn, attach the actual bytes alongside
         // the (already description-augmented) text so the model can read fine detail. The text alone
