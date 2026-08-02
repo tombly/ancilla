@@ -1,4 +1,4 @@
-using Ynab.Api.Client;
+using Ynab.Api.Client.Enums;
 
 namespace Ancela.Agent.SemanticKernel.Plugins.YnabPlugin.Models;
 

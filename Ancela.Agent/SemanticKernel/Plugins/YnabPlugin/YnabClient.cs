@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using Ancela.Agent.SemanticKernel.Plugins.YnabPlugin.Models;
 using Ynab.Api.Client;
 using Ynab.Api.Client.Extensions;
+using Ynab.Api.Client.Models;
 
 namespace Ancela.Agent.SemanticKernel.Plugins.YnabPlugin;
 
@@ -20,8 +21,8 @@ public class YnabClient
 
     public async Task<AccountsSummaryModel> GetAccountsAsync()
     {
-        var budgetDetail = await _client.GetBudgetDetailAsync();
-        var accounts = (await _client.GetAccountsAsync(budgetDetail.Id.ToString(), null)!).Data.Accounts;
+        var planDetail = await _client.GetPlanDetailAsync();
+        var accounts = (await _client.GetAccountsAsync(planDetail.Id.ToString())).Accounts;
 
         var models = accounts
                 .Where(a => !a.Deleted && !a.Closed)
@@ -29,12 +30,12 @@ public class YnabClient
                 {
                     Name = a.Name,
                     Type = a.Type,
-                    OnBudget = a.On_budget,
+                    OnBudget = a.OnBudget,
                     Note = a.Note,
                     Balance = a.Balance.FromMilliunits(),
-                    ClearedBalance = a.Cleared_balance.FromMilliunits(),
-                    UnclearedBalance = a.Uncleared_balance.FromMilliunits(),
-                    LastReconciledAt = a.Last_reconciled_at.HasValue ? a.Last_reconciled_at.Value.DateTime : null
+                    ClearedBalance = a.ClearedBalance.FromMilliunits(),
+                    UnclearedBalance = a.UnclearedBalance.FromMilliunits(),
+                    LastReconciledAt = a.LastReconciledAt
                 }).ToArray();
 
         // YNAB has no net-worth endpoint, so compute it here rather than make the model
@@ -54,42 +55,42 @@ public class YnabClient
     /// </param>
     public async Task<CategoryModel[]> GetCategoriesAsync(DateTimeOffset? month = null)
     {
-        var budgetDetail = await _client.GetBudgetDetailAsync();
-        var budgetId = budgetDetail.Id.ToString();
+        var planDetail = await _client.GetPlanDetailAsync();
+        var planId = planDetail.Id.ToString();
 
         var categories = month is null
-            ? (await _client.GetCategoriesAsync(budgetId, null)).Data.Category_groups.SelectMany(g => g.Categories)
-            : (await _client.GetBudgetMonthAsync(budgetId, FirstOfMonth(month.Value))).Data.Month.Categories;
+            ? (await _client.GetCategoriesAsync(planId)).CategoryGroups.SelectMany(g => g.Categories)
+            : (await _client.GetPlanMonthAsync(planId, FirstOfMonth(month.Value))).Month.Categories;
 
         return categories
                 .Where(a => !a.Deleted && !a.Hidden)
                 .Select(c => new CategoryModel
                 {
-                    CategoryGroupName = c.Category_group_name,
+                    CategoryGroupName = c.CategoryGroupName,
                     Name = c.Name,
                     Budgeted = c.Budgeted.FromMilliunits(),
                     Activity = c.Activity.FromMilliunits(),
                     Balance = c.Balance.FromMilliunits(),
-                    GoalType = c.Goal_type,
-                    GoalTarget = c.Goal_target.HasValue ? c.Goal_target.Value.FromMilliunits() : null,
-                    GoalPercentageComplete = c.Goal_percentage_complete,
+                    GoalType = c.GoalType,
+                    GoalTarget = c.GoalTarget.HasValue ? c.GoalTarget.Value.FromMilliunits() : null,
+                    GoalPercentageComplete = c.GoalPercentageComplete,
                     MonthlyNeed = c.MonthlyNeed().FromMilliunits(),
                 }).ToArray();
     }
 
     public async Task<MonthSummaryModel[]> GetMonthSummariesAsync()
     {
-        var budgetDetail = await _client.GetBudgetDetailAsync();
-        var monthSummaries = await _client.GetBudgetMonthsAsync(budgetDetail.Id.ToString(), null);
-        return monthSummaries.Data.Months
+        var planDetail = await _client.GetPlanDetailAsync();
+        var monthSummaries = await _client.GetPlanMonthsAsync(planDetail.Id.ToString());
+        return monthSummaries.Months
                 .Select(m => new MonthSummaryModel
                 {
-                    Month = m.Month,
+                    Month = ToDateTimeOffset(m.Month),
                     Income = m.Income.FromMilliunits(),
                     Budgeted = m.Budgeted.FromMilliunits(),
                     Activity = m.Activity.FromMilliunits(),
-                    ReadyToAssign = m.To_be_budgeted.FromMilliunits(),
-                    AgeOfMoney = m.Age_of_money
+                    ReadyToAssign = m.ToBeBudgeted.FromMilliunits(),
+                    AgeOfMoney = m.AgeOfMoney
                 }).ToArray();
     }
 
@@ -104,11 +105,12 @@ public class YnabClient
         string? categoryName = null,
         string? payeeName = null)
     {
-        var budgetDetail = await _client.GetBudgetDetailAsync();
-        var budgetId = budgetDetail.Id.ToString();
+        var planDetail = await _client.GetPlanDetailAsync();
+        var planId = planDetail.Id.ToString();
 
         // Default to the last 30 days so an unfiltered query can't pull the entire history.
         sinceDate ??= DateTimeOffset.Now.AddDays(-30);
+        var sinceDateOnly = DateOnly.FromDateTime(sinceDate.Value.Date);
 
         string? serverFilter;
         IEnumerable<TransactionModel> transactions;
@@ -116,26 +118,26 @@ public class YnabClient
         if (categoryName is not null)
         {
             serverFilter = "category";
-            var response = await _client.GetTransactionsByCategoryAsync(budgetId, ResolveCategoryId(budgetDetail, categoryName), sinceDate, null, null);
-            transactions = response.Data.Transactions.Where(t => !t.Deleted).Select(t => Map(t));
+            var response = await _client.GetTransactionsByCategoryAsync(planId, ResolveCategoryId(planDetail, categoryName), sinceDateOnly);
+            transactions = response.Transactions.Where(t => !t.Deleted).Select(t => Map(t));
         }
         else if (payeeName is not null)
         {
             serverFilter = "payee";
-            var response = await _client.GetTransactionsByPayeeAsync(budgetId, ResolvePayeeId(budgetDetail, payeeName), sinceDate, null, null);
-            transactions = response.Data.Transactions.Where(t => !t.Deleted).Select(t => Map(t));
+            var response = await _client.GetTransactionsByPayeeAsync(planId, ResolvePayeeId(planDetail, payeeName), sinceDateOnly);
+            transactions = response.Transactions.Where(t => !t.Deleted).Select(t => Map(t));
         }
         else if (accountName is not null)
         {
             serverFilter = "account";
-            var response = await _client.GetTransactionsByAccountAsync(budgetId, ResolveAccountId(budgetDetail, accountName), sinceDate, null, null);
-            transactions = response.Data.Transactions.Where(t => !t.Deleted).Select(t => Map(t));
+            var response = await _client.GetTransactionsByAccountAsync(planId, ResolveAccountId(planDetail, accountName), sinceDateOnly);
+            transactions = response.Transactions.Where(t => !t.Deleted).Select(t => Map(t));
         }
         else
         {
             serverFilter = null;
-            var response = await _client.GetTransactionsAsync(budgetId, sinceDate, null, null);
-            transactions = response.Data.Transactions.Where(t => !t.Deleted).Select(t => Map(t));
+            var response = await _client.GetTransactionsAsync(planId, sinceDateOnly);
+            transactions = response.Transactions.Where(t => !t.Deleted).Select(t => Map(t));
         }
 
         // Apply any filters the server-side query didn't already satisfy.
@@ -151,18 +153,18 @@ public class YnabClient
 
     public async Task<ScheduledTransactionModel[]> GetScheduledTransactionsAsync()
     {
-        var budgetDetail = await _client.GetBudgetDetailAsync();
-        var scheduled = await _client.GetScheduledTransactionsAsync(budgetDetail.Id.ToString(), null);
-        return scheduled.Data.Scheduled_transactions
+        var planDetail = await _client.GetPlanDetailAsync();
+        var scheduled = await _client.GetScheduledTransactionsAsync(planDetail.Id.ToString());
+        return scheduled.ScheduledTransactions
                 .Where(s => !s.Deleted)
                 .Select(s => new ScheduledTransactionModel
                 {
-                    DateNext = s.Date_next,
+                    DateNext = ToDateTimeOffset(s.DateNext),
                     Frequency = s.Frequency,
                     Amount = s.Amount.FromMilliunits(),
-                    PayeeName = s.Payee_name,
-                    CategoryName = s.Category_name,
-                    AccountName = s.Account_name,
+                    PayeeName = s.PayeeName,
+                    CategoryName = s.CategoryName,
+                    AccountName = s.AccountName,
                     Memo = s.Memo,
                 })
                 .OrderBy(s => s.DateNext)
@@ -171,11 +173,11 @@ public class YnabClient
 
     private static TransactionModel Map(TransactionDetail t) => new()
     {
-        Date = t.Date,
+        Date = ToDateTimeOffset(t.Date),
         Amount = t.Amount.FromMilliunits(),
-        PayeeName = t.Payee_name,
-        CategoryName = t.Category_name,
-        AccountName = t.Account_name,
+        PayeeName = t.PayeeName,
+        CategoryName = t.CategoryName,
+        AccountName = t.AccountName,
         Memo = t.Memo,
         Cleared = t.Cleared,
         Approved = t.Approved,
@@ -183,37 +185,37 @@ public class YnabClient
 
     private static TransactionModel Map(HybridTransaction t) => new()
     {
-        Date = t.Date,
+        Date = ToDateTimeOffset(t.Date),
         Amount = t.Amount.FromMilliunits(),
-        PayeeName = t.Payee_name,
-        CategoryName = t.Category_name,
-        AccountName = t.Account_name,
+        PayeeName = t.PayeeName,
+        CategoryName = t.CategoryName,
+        AccountName = t.AccountName,
         Memo = t.Memo,
         Cleared = t.Cleared,
         Approved = t.Approved,
     };
 
-    private static string ResolveAccountId(BudgetDetail budget, string name)
+    private static string ResolveAccountId(PlanDetail plan, string name)
     {
-        var accounts = budget.Accounts.Where(a => !a.Deleted).ToList();
+        var accounts = plan.Accounts!.Where(a => !a.Deleted).ToList();
         var match = accounts.FirstOrDefault(a => string.Equals(a.Name, name, StringComparison.InvariantCultureIgnoreCase))
                     ?? accounts.FirstOrDefault(a => Matches(a.Name, name))
                     ?? throw new Exception($"No account found matching '{name}'.");
         return match.Id.ToString();
     }
 
-    private static string ResolveCategoryId(BudgetDetail budget, string name)
+    private static string ResolveCategoryId(PlanDetail plan, string name)
     {
-        var categories = budget.Categories.Where(c => !c.Deleted && !c.Hidden).ToList();
+        var categories = plan.Categories!.Where(c => !c.Deleted && !c.Hidden).ToList();
         var match = categories.FirstOrDefault(c => string.Equals(c.Name, name, StringComparison.InvariantCultureIgnoreCase))
                     ?? categories.FirstOrDefault(c => Matches(c.Name, name))
                     ?? throw new Exception($"No category found matching '{name}'.");
         return match.Id.ToString();
     }
 
-    private static string ResolvePayeeId(BudgetDetail budget, string name)
+    private static string ResolvePayeeId(PlanDetail plan, string name)
     {
-        var payees = budget.Payees.Where(p => !p.Deleted).ToList();
+        var payees = plan.Payees!.Where(p => !p.Deleted).ToList();
         var match = payees.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.InvariantCultureIgnoreCase))
                     ?? payees.FirstOrDefault(p => Matches(p.Name, name))
                     ?? throw new Exception($"No payee found matching '{name}'.");
@@ -223,6 +225,9 @@ public class YnabClient
     private static bool Matches(string? value, string query) =>
         value is not null && value.Contains(query, StringComparison.InvariantCultureIgnoreCase);
 
-    private static DateTimeOffset FirstOfMonth(DateTimeOffset date) =>
-        new(date.Year, date.Month, 1, 0, 0, 0, date.Offset);
+    private static DateOnly FirstOfMonth(DateTimeOffset date) => new(date.Year, date.Month, 1);
+
+    // The API returns date-only fields as calendar dates with no timezone; treat them as UTC
+    // midnight to match what the previous DateTimeOffset-typed client returned.
+    private static DateTimeOffset ToDateTimeOffset(DateOnly date) => new(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
 }
