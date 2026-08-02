@@ -110,7 +110,7 @@ public static class DependencyModule
         // Register a chat completion service for use by the kernels.
         builder.Services.AddSingleton<IChatCompletionService>(sp =>
         {
-            return new OpenAIChatCompletionService("gpt-5-mini", sp.GetRequiredService<OpenAIClient>());
+            return new OpenAIChatCompletionService("gpt-5.4", sp.GetRequiredService<OpenAIClient>());
         });
 
         return builder;

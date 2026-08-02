@@ -14,7 +14,7 @@ adds limited autonomy (reminders, standing rules, scheduled tasks). It's built w
 - **Azure Cosmos DB** for data storage
 - **Azure Service Bus** for the message queues
 - **Semantic Kernel** for AI/LLM orchestration
-- **OpenAI (`gpt-5-mini`)** for the conversational model
+- **OpenAI (`gpt-5.4`)** for the conversational model
 - **Twilio** for SMS, **Microsoft Graph** (calendar/email/contacts), **YNAB** (budget),
   **Tavily** (web search), and **reMarkable** (owner-only document upload)
 
