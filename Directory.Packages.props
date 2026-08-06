@@ -54,9 +54,9 @@
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
     <!-- Microsoft Graph package -->
-    <PackageVersion Include="Microsoft.Graph" Version="5.105.0" />
-    <!-- Pinned above Graph 5.105.0's transitive 1.21.1 to clear GHSA-7j59-v9qr-6fq9. -->
-    <PackageVersion Include="Microsoft.Kiota.Abstractions" Version="1.22.2" />
+    <PackageVersion Include="Microsoft.Graph" Version="6.2.0" />
+    <!-- Graph 6.2.0 -> Graph.Core 4.0.1 requires Kiota.Abstractions >= 2.0.0. -->
+    <PackageVersion Include="Microsoft.Kiota.Abstractions" Version="2.0.0" />
     <!-- YNAB packages -->
     <PackageVersion Include="Ynab.Api.Client" Version="2.0.0" />
     <PackageVersion Include="Ynab.Api.Client.Extensions" Version="2.0.0" />
